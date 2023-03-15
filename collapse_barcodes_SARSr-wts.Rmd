@@ -1,0 +1,406 @@
+---
+title: "Collapse barcodes to final per-RBD/mutant phenotype scores for the wildtype sarbecoviruses pool"
+author: "Tyler Starr"
+date: "05/14/2022"
+output:
+  github_document:
+    toc: true
+    html_preview: false
+editor_options: 
+  chunk_output_type: inline
+---
+This notebook reads in the per-barcode sera binding values and previously measured expression for sarbecovirus homologs pool. It synthesizes these two sets of results and calculates the final 'mean' phenotypes for each variant, and generates some coverage and QC analyses.
+
+```{r setup, message=FALSE, warning=FALSE, error=FALSE}
+require("knitr")
+knitr::opts_chunk$set(echo = T)
+knitr::opts_chunk$set(dev.args = list(png = list(type = "cairo")))
+
+#list of packages to install/load
+packages = c("yaml","data.table","tidyverse","gridExtra")
+#install any packages not already installed
+installed_packages <- packages %in% rownames(installed.packages())
+if(any(installed_packages == F)){
+  install.packages(packages[!installed_packages])
+}
+#load packages
+invisible(lapply(packages, library, character.only=T))
+
+#read in config file
+config <- read_yaml("config.yaml")
+
+#make output directory
+if(!file.exists(config$final_variant_scores_dir)){
+  dir.create(file.path(config$final_variant_scores_dir))
+}
+```
+Session info for reproducing environment:
+```{r print_sessionInfo}
+sessionInfo()
+```
+
+## Setup
+
+Read in tables of per-barcode AUC
+
+```{r input_data}
+dt <- data.table(read.csv(config$sera_delta_AUC_file),stringsAsFactors=F)[library=="lib47_SARSr-wts",]
+
+#check all targets are in the targets_ordered config list
+unique(dt$target) %in% config$targets_ordered
+
+#assign target as a factor in my desired overall plotting order
+dt[,target := factor(dt$target,levels=config$targets_ordered)]
+
+#remove substitutiosn columns as these are all widltype
+dt[,c("aa_substitutions","n_aa_substitutions") := NULL]
+
+#read in previously measured expression measurements for these variants? Note, don't have this metric for the pool7 additions to this v2 pool
+dt_expr <- data.table(read.csv(config$SARSr_lib47_mut_bind_expr),stringsAsFactors=F)
+dt_expr[target=="SARS-CoV-2",target:="SARS-CoV-2_WH1"]
+```
+
+## Calculate per-variant mean scores
+
+Unfiltered, look at distribution of AUC scores
+
+```{r unfiltered_AUCs, echo=T, fig.width=10, fig.height=16, fig.align="center", dpi=300,dev="png"}
+p1 <- ggplot(dt[!is.na(tetra_AUC),],aes(x=target,y=tetra_AUC))+
+  geom_violin(scale="width")+stat_summary(fun=median,geom="point",size=1)+
+  ggtitle("tetra sera binding")+xlab("homolog")+theme(axis.text.x=element_text(angle=-90,hjust=0))
+
+p2 <- ggplot(dt[!is.na(tri_AUC),],aes(x=target,y=tri_AUC))+
+  geom_violin(scale="width")+stat_summary(fun=median,geom="point",size=1)+
+  ggtitle("tri sera binding")+xlab("homolog")+theme(axis.text.x=element_text(angle=-90,hjust=0))
+
+p3 <- ggplot(dt[!is.na(SARS2mono_AUC),],aes(x=target,y=SARS2mono_AUC))+
+  geom_violin(scale="width")+stat_summary(fun=median,geom="point",size=1)+
+  ggtitle("SARS2mono sera binding")+xlab("homolog")+theme(axis.text.x=element_text(angle=-90,hjust=0))
+
+p4 <- ggplot(dt[!is.na(RmYN02mono_AUC),],aes(x=target,y=RmYN02mono_AUC))+
+  geom_violin(scale="width")+stat_summary(fun=median,geom="point",size=1)+
+  ggtitle("RmYN02mono sera binding")+xlab("homolog")+theme(axis.text.x=element_text(angle=-90,hjust=0))
+
+grid.arrange(p1,p2,p3,p4,ncol=1)
+```
+
+Let's add a variable that flags the top and bottom 2.5% of expression scores for each variant, and see how violin plots look when censoring these top and bottom 5% of expressed barcodes
+
+```{r censor_2.5_AUCs, echo=T, fig.width=10, fig.height=16, fig.align="center", dpi=300,dev="png"}
+dt[,tetra_censor_lower:=quantile(tetra_AUC,0.025,na.rm=T,type=7),by=c("library","target")]
+dt[,tetra_censor_upper:=quantile(tetra_AUC,0.975,na.rm=T,type=7),by=c("library","target")]
+
+dt[,tri_censor_lower:=quantile(tri_AUC,0.025,na.rm=T,type=7),by=c("library","target")]
+dt[,tri_censor_upper:=quantile(tri_AUC,0.975,na.rm=T,type=7),by=c("library","target")]
+
+dt[,SARS2mono_censor_lower:=quantile(SARS2mono_AUC,0.025,na.rm=T,type=7),by=c("library","target")]
+dt[,SARS2mono_censor_upper:=quantile(SARS2mono_AUC,0.975,na.rm=T,type=7),by=c("library","target")]
+
+dt[,RmYN02mono_censor_lower:=quantile(RmYN02mono_AUC,0.025,na.rm=T,type=7),by=c("library","target")]
+dt[,RmYN02mono_censor_upper:=quantile(RmYN02mono_AUC,0.975,na.rm=T,type=7),by=c("library","target")]
+
+p1 <- ggplot(dt[!is.na(tetra_AUC) & tetra_AUC >= tetra_censor_lower & tetra_AUC <= tetra_censor_upper,],aes(x=target,y=tetra_AUC))+
+  geom_violin(scale="width")+stat_summary(fun=median,geom="point",size=1)+
+  ggtitle("tetra sera binding")+xlab("homolog")+theme(axis.text.x=element_text(angle=-90,hjust=0))
+
+p2 <- ggplot(dt[!is.na(tri_AUC) & tri_AUC >= tri_censor_lower & tri_AUC <= tri_censor_upper,],aes(x=target,y=tri_AUC))+
+  geom_violin(scale="width")+stat_summary(fun=median,geom="point",size=1)+
+  ggtitle("tri sera binding")+xlab("homolog")+theme(axis.text.x=element_text(angle=-90,hjust=0))
+
+p3 <- ggplot(dt[!is.na(SARS2mono_AUC) & SARS2mono_AUC >= SARS2mono_censor_lower & SARS2mono_AUC <= SARS2mono_censor_upper,],aes(x=target,y=SARS2mono_AUC))+
+  geom_violin(scale="width")+stat_summary(fun=median,geom="point",size=1)+
+  ggtitle("SARS2mono sera binding")+xlab("homolog")+theme(axis.text.x=element_text(angle=-90,hjust=0))
+
+p4 <- ggplot(dt[!is.na(RmYN02mono_AUC) & RmYN02mono_AUC >= RmYN02mono_censor_lower & RmYN02mono_AUC <= RmYN02mono_censor_upper,],aes(x=target,y=RmYN02mono_AUC))+
+  geom_violin(scale="width")+stat_summary(fun=median,geom="point",size=1)+
+  ggtitle("RmYN02mono sera binding")+xlab("homolog")+theme(axis.text.x=element_text(angle=-90,hjust=0))
+
+
+grid.arrange(p1,p2,p3,p4,ncol=1)
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib47_vioplots_AUC-cens.pdf",sep="")))
+```
+
+Calculate the mean per variant, the standard deviation, and the number of (post-filter) barcodes on which a variant score was determined
+
+````{r calculate_mean_scores}
+#apply the censors to NA out the phenotypes outside the range
+dt[tetra_AUC < tetra_censor_lower | tetra_AUC > tetra_censor_upper, tetra_AUC:=NA]
+dt[tri_AUC < tri_censor_lower | tri_AUC > tri_censor_upper, tri_AUC:=NA]
+dt[SARS2mono_AUC < SARS2mono_censor_lower | SARS2mono_AUC > SARS2mono_censor_upper, SARS2mono_AUC:=NA]
+dt[RmYN02mono_AUC < RmYN02mono_censor_lower | RmYN02mono_AUC > RmYN02mono_censor_upper, RmYN02mono_AUC:=NA]
+
+dt[,mean_tetra_AUC:=mean(tetra_AUC,na.rm=T),by=c("library","target")]
+dt[,sd_tetra_AUC:=sd(tetra_AUC,na.rm=T),by=c("library","target")]
+dt[,n_bc_tetra_AUC:=sum(!is.na(tetra_AUC)),by=c("library","target")]
+
+dt[,mean_tri_AUC:=mean(tri_AUC,na.rm=T),by=c("library","target")]
+dt[,sd_tri_AUC:=sd(tri_AUC,na.rm=T),by=c("library","target")]
+dt[,n_bc_tri_AUC:=sum(!is.na(tri_AUC)),by=c("library","target")]
+
+dt[,mean_SARS2mono_AUC:=mean(SARS2mono_AUC,na.rm=T),by=c("library","target")]
+dt[,sd_SARS2mono_AUC:=sd(SARS2mono_AUC,na.rm=T),by=c("library","target")]
+dt[,n_bc_SARS2mono_AUC:=sum(!is.na(SARS2mono_AUC)),by=c("library","target")]
+
+dt[,mean_RmYN02mono_AUC:=mean(RmYN02mono_AUC,na.rm=T),by=c("library","target")]
+dt[,sd_RmYN02mono_AUC:=sd(RmYN02mono_AUC,na.rm=T),by=c("library","target")]
+dt[,n_bc_RmYN02mono_AUC:=sum(!is.na(RmYN02mono_AUC)),by=c("library","target")]
+
+```
+
+Collapse down to tables reporting just the summary statistics for each genotype.
+
+```{r collapse_to_genotype}
+dt_final <- dt[,.(library,target,variant_class,
+                  mean_tetra_AUC, sd_tetra_AUC, n_bc_tetra_AUC,
+                  mean_tri_AUC, sd_tri_AUC, n_bc_tri_AUC,
+                  mean_SARS2mono_AUC, sd_SARS2mono_AUC, n_bc_SARS2mono_AUC,
+                  mean_RmYN02mono_AUC, sd_RmYN02mono_AUC, n_bc_RmYN02mono_AUC)]
+
+dt_final <- unique(dt_final); setkey(dt_final, target)
+```
+
+Let's look how SEM is distributed. Can see that SEM is generally very, very low. Also that it doesn't really have a relationship with the AUC metric, which is good.
+
+```{r plot_SEMs, echo=T, fig.width=8, fig.height=8, fig.align="center", dpi=300,dev="png"}
+par(mfrow=c(2,2))
+#tetra
+x <- dt_final[,mean_tetra_AUC]; y <- dt_final[,sd_tetra_AUC/sqrt(n_bc_tetra_AUC)]; plot(x,y,pch=16,col="#00000090",xlab="variant AUC",ylab="SEM",main="tetra sera")
+
+#tri
+x <- dt_final[,mean_tri_AUC]; y <- dt_final[,sd_tri_AUC/sqrt(n_bc_tri_AUC)]; plot(x,y,pch=16,col="#00000090",xlab="variant AUC",ylab="SEM",main="tri sera")
+
+#SARS2mono
+x <- dt_final[,mean_SARS2mono_AUC]; y <- dt_final[,sd_SARS2mono_AUC/sqrt(n_bc_SARS2mono_AUC)]; plot(x,y,pch=16,col="#00000090",xlab="variant AUC",ylab="SEM",main="SARS2mono sera")
+
+#RmYN02mono
+x <- dt_final[,mean_RmYN02mono_AUC]; y <- dt_final[,sd_RmYN02mono_AUC/sqrt(n_bc_RmYN02mono_AUC)]; plot(x,y,pch=16,col="#00000090",xlab="variant AUC",ylab="SEM",main="RmYN02mono sera")
+
+
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/SEM-v-AUC.pdf",sep=""),useDingbats=F))
+```
+
+Let's also look at how standard error of a within-replicate mean varies with the number of barcodes
+```{r plot_sterr_v_n, echo=T, fig.width=8, fig.height=8, fig.align="center", dpi=300,dev="png"}
+par(mfrow=c(2,2))
+#tetra
+x <- dt_final[,n_bc_tetra_AUC]; y <- dt_final[,sd_tetra_AUC/sqrt(n_bc_tetra_AUC)]; plot(x,y,pch=16,col="#00000090",xlab="number barcodes",ylab="SEM",main="tetra sera")
+
+#tri
+x <- dt_final[,n_bc_tri_AUC]; y <- dt_final[,sd_tri_AUC/sqrt(n_bc_tri_AUC)]; plot(x,y,pch=16,col="#00000090",xlab="number barcodes",ylab="SEM",main="tri sera")
+
+#SARS2mono
+x <- dt_final[,n_bc_SARS2mono_AUC]; y <- dt_final[,sd_SARS2mono_AUC/sqrt(n_bc_SARS2mono_AUC)]; plot(x,y,pch=16,col="#00000090",xlab="number barcodes",ylab="SEM",main="SARS2mono sera")
+
+#RmYN02mono
+x <- dt_final[,n_bc_RmYN02mono_AUC]; y <- dt_final[,sd_RmYN02mono_AUC/sqrt(n_bc_RmYN02mono_AUC)]; plot(x,y,pch=16,col="#00000090",xlab="number barcodes",ylab="SEM",main="RmYN02mono sera")
+
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib47_SEM-v-n-bc.pdf",sep=""),useDingbats=F))
+```
+Add in the previously-measured expression values.
+
+```{r add_expr, fig.width=6, fig.height=12, fig.align="center", dpi=300,dev="png"}
+dt_final[,expr:=as.numeric(NA)]
+for(i in 1:nrow(dt_final)){
+  bg <- as.character(dt_final[i,target])
+  if(bg %in% dt_expr$target){
+    dt_final[i,expr := dt_expr[target==bg,expression]]
+  }
+}
+
+#compute a delta_expr relative to the median
+dt_final[,delta_expr := expr - median(dt_final$expr,na.rm=T)]
+
+#use the normalization values applied to the single-mut DMS data in the corresponding lib40 notebook? The average normalization coefficient there was 1.10697
+dt_final[,tetra_normAUC := mean_tetra_AUC - (1.10697*delta_expr)]
+dt_final[,tri_normAUC := mean_tri_AUC - (1.10697*delta_expr)]
+dt_final[,SARS2mono_normAUC := mean_SARS2mono_AUC - (1.10697*delta_expr)]
+dt_final[,RmYN02mono_normAUC := mean_RmYN02mono_AUC - (1.10697*delta_expr)]
+
+par(mfrow=c(4,2))
+plot(dt_final$delta_expr,dt_final$mean_tetra_AUC,xlab="expr relative to median",ylab="AUC, tetra sera",pch=16)
+plot(dt_final$delta_expr,dt_final$tetra_normAUC,xlab="expr relative to median",ylab="expr-normalized AUC, tetra sera",pch=16)
+
+plot(dt_final$delta_expr,dt_final$mean_tri_AUC,xlab="expr relative to median",ylab="AUC, tri sera",pch=16)
+plot(dt_final$delta_expr,dt_final$tri_normAUC,xlab="expr relative to median",ylab="expr-normalized AUC, tri sera",pch=16)
+
+plot(dt_final$delta_expr,dt_final$mean_SARS2mono_AUC,xlab="expr relative to median",ylab="AUC, SARS2mono sera",pch=16)
+plot(dt_final$delta_expr,dt_final$SARS2mono_normAUC,xlab="expr relative to median",ylab="expr-normalized AUC, SARS2mono sera",pch=16)
+
+plot(dt_final$delta_expr,dt_final$mean_RmYN02mono_AUC,xlab="expr relative to median",ylab="AUC, RmYN02mono sera",pch=16)
+plot(dt_final$delta_expr,dt_final$RmYN02mono_normAUC,xlab="expr relative to median",ylab="expr-normalized AUC, RmYN02mono sera",pch=16)
+
+```
+
+
+Filter out the two backgrounds that were completely non-expressing. Most barcodes were purged before the affinity measurements for these backgrounds, so the affinities are determined from few barcodes and are just generally unreliable because these are poorly folded/expressing variants. (E.g. could see very high standard deviations)
+
+```{r remove_nonexpressing}
+dt_final[target %in% c("HKU3-8","AncSARS1a_alt"),c("mean_tetra_AUC","sd_tetra_AUC","n_bc_tetra_AUC",
+                                                              "mean_tri_AUC","sd_tri_AUC","n_bc_tri_AUC",
+                                                              "mean_SARS2mono_AUC","sd_SARS2mono_AUC","n_bc_SARS2mono_AUC",
+                                                              "mean_RmYN02mono_AUC","sd_RmYN02mono_AUC","n_bc_RmYN02mono_AUC"):=NA]
+```
+
+Coverage stats on n_barcodes for different measurements in the final pooled measurements.
+
+```{r n_barcode_plots, echo=T, fig.width=8, fig.height=6, fig.align="center", dpi=300,dev="png"}
+par(mfrow=c(2,2))
+
+hist(dt_final$n_bc_tetra_AUC,col="gray50",main=paste("tetra sera,\nmedian ",median(dt_final$n_bc_tetra_AUC,na.rm=T),sep=""),xlab="number barcodes",ylab="number genotypes",breaks=20)
+
+hist(dt_final$n_bc_tri_AUC,col="gray50",main=paste("tri sera,\nmedian ",median(dt_final$n_bc_tri_AUC,na.rm=T),sep=""),xlab="number barcodes",ylab="number genotypes",breaks=20)
+
+hist(dt_final$n_bc_SARS2mono_AUC,col="gray50",main=paste("SARS2mono sera,\nmedian ",median(dt_final$n_bc_SARS2mono_AUC,na.rm=T),sep=""),xlab="number barcodes",ylab="number genotypes",breaks=20)
+
+hist(dt_final$n_bc_RmYN02mono_AUC,col="gray50",main=paste("RmYN02mono sera,\nmedian ",median(dt_final$n_bc_RmYN02mono_AUC,na.rm=T),sep=""),xlab="number barcodes",ylab="number genotypes",breaks=20)
+
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib47_hist_n_barcodes.pdf",sep="")))
+```
+Order factor variables for plotting
+
+```{r order_plotting_factors}
+#order target by order given in config
+dt_final$target <- factor(dt_final$target,levels=config$targets_ordered)
+
+#rename some columns for convenience
+setnames(dt_final,"mean_tetra_AUC","tetra_AUC")
+setnames(dt_final,"mean_tri_AUC","tri_AUC")
+setnames(dt_final,"mean_SARS2mono_AUC","SARS2mono_AUC")
+setnames(dt_final,"mean_RmYN02mono_AUC","RmYN02mono_AUC")
+```
+
+## Heatmaps! 
+
+Output heatmaps illustrating all wildtype variants with separate columns for each serum. Do with both the raw AUC and the expression-normalized metric.
+
+```{r heatmap_wildtypes_all_AUC, fig.width=12,fig.height=4,fig.align="center", dpi=500,dev="png",echo=T}
+#make temp long-form data frame
+temp1 <- data.table::melt(dt_final[,.(target,tetra_AUC,tri_AUC,SARS2mono_AUC,RmYN02mono_AUC)],
+                          id.vars=c("target"),
+                          measure.vars=c("tetra_AUC","tri_AUC","SARS2mono_AUC","RmYN02mono_AUC"),
+                          variable.name="sera",value.name="AUC")
+
+p1 <- ggplot(temp1,aes(target,sera))+geom_tile(aes(fill=AUC),color="black",lwd=0.1)+
+  scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(1.5,8),values=c(0,1.5/6.5,6.5/6.5),na.value="gray40")+
+  #scale_fill_gradientn(colours=c("#FFFFFF","#003366"),limits=c(5,12),values=c(0,1),na.value="yellow")+
+  #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,430,by=5)))+
+  labs(x="RBD homolog",y="")+theme_classic(base_size=9)+
+  coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold"))
+
+grid.arrange(p1,nrow=1)
+
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib47_heatmap_AUC_all_wildtypes.pdf",sep="")))
+
+```
+And for expression-normalized
+
+```{r heatmap_wildtypes_all_normAUC, fig.width=12,fig.height=4,fig.align="center", dpi=500,dev="png",echo=T}
+#make temp long-form data frame
+temp1.1 <- data.table::melt(dt_final[,.(target,tetra_normAUC,tri_normAUC,SARS2mono_normAUC,RmYN02mono_normAUC)],
+                          id.vars=c("target"),
+                          measure.vars=c("tetra_normAUC","tri_normAUC","SARS2mono_normAUC","RmYN02mono_normAUC"),
+                          variable.name="sera",value.name="normAUC")
+
+p1 <- ggplot(temp1.1,aes(target,sera))+geom_tile(aes(fill=normAUC),color="black",lwd=0.1)+
+  scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(1.5,8),values=c(0,1.5/6.5,6.5/6.5),na.value="gray40")+
+  #scale_fill_gradientn(colours=c("#FFFFFF","#003366"),limits=c(5,12),values=c(0,1),na.value="yellow")+
+  #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,430,by=5)))+
+  labs(x="RBD homolog",y="")+theme_classic(base_size=9)+
+  coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold"))
+
+grid.arrange(p1,nrow=1)
+
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib47_heatmap_AUC_all_wildtypes.pdf",sep="")))
+
+```
+Showing just extant sarbs.
+
+```{r heatmap_wildtypes_extants_AUC, fig.width=12,fig.height=4,fig.align="center", dpi=500,dev="png",echo=T}
+#make temp long-form data frame
+extant <- c(config$EurAf_extant,config$RsYN04_extant,config$SARS2_extant,config$SARS1_extant,config$Clade2_extant)
+
+temp2 <- temp1[target %in% extant,];temp2$target <- factor(temp2$target,levels=extant)
+
+p1 <- ggplot(temp2,aes(target,sera))+geom_tile(aes(fill=AUC),color="black",lwd=0.1)+
+  scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(1.5,8),values=c(0,1.5/6.5,6.5/6.5),na.value="gray40")+
+  #scale_fill_gradientn(colours=c("#FFFFFF","#003366"),limits=c(5,12),values=c(0,1),na.value="yellow")+
+  #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,430,by=5)))+
+  labs(x="RBD homolog",y="")+theme_classic(base_size=9)+
+  coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold"))
+
+p1
+
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib47_heatmap_AUC_extant_wildtypes.pdf",sep="")))
+
+```
+```{r heatmap_wildtypes_extants_normAUC, fig.width=12,fig.height=4,fig.align="center", dpi=500,dev="png",echo=T}
+#make temp long-form data frame
+extant <- c(config$EurAf_extant,config$RsYN04_extant,config$SARS2_extant,config$SARS1_extant,config$Clade2_extant)
+
+temp2.1 <- temp1.1[target %in% extant,];temp2.1$target <- factor(temp2.1$target,levels=extant)
+
+p1 <- ggplot(temp2.1,aes(target,sera))+geom_tile(aes(fill=normAUC),color="black",lwd=0.1)+
+  scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(1.5,8),values=c(0,1.5/6.5,6.5/6.5),na.value="gray40")+
+  #scale_fill_gradientn(colours=c("#FFFFFF","#003366"),limits=c(5,12),values=c(0,1),na.value="yellow")+
+  #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,430,by=5)))+
+  labs(x="RBD homolog",y="")+theme_classic(base_size=9)+
+  coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold"))
+
+p1
+
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib47_heatmap_normAUC_extant_wildtypes.pdf",sep="")))
+
+```
+And for ancestors.
+
+```{r heatmap_wildtypes_MAP-ancestors_AUC, fig.width=8,fig.height=4,fig.align="center", dpi=500,dev="png",echo=T}
+#make temp long-form data frame
+ancestors <- c(config$ancestors_MAP)
+
+temp3 <- temp1[target %in% ancestors,];temp3$target <- factor(temp3$target,levels=ancestors)
+
+p1 <- ggplot(temp3,aes(target,sera))+geom_tile(aes(fill=AUC),color="black",lwd=0.1)+
+  scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(1.5,8),values=c(0,1.5/6.5,6.5/6.5),na.value="gray40")+
+  #scale_fill_gradientn(colours=c("#FFFFFF","#003366"),limits=c(5,12),values=c(0,1),na.value="yellow")+
+  #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,430,by=5)))+
+  labs(x="RBD homolog",y="")+theme_classic(base_size=9)+
+  coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold"))
+
+p1
+
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib47_heatmap_AUC_MAP-ancestors.pdf",sep="")))
+
+```
+
+```{r heatmap_wildtypes_MAP-ancestors_normAUC, fig.width=8,fig.height=4,fig.align="center", dpi=500,dev="png",echo=T}
+#make temp long-form data frame
+ancestors <- c(config$ancestors_MAP)
+
+temp3.1 <- temp1.1[target %in% ancestors,];temp3.1$target <- factor(temp3.1$target,levels=ancestors)
+
+p1 <- ggplot(temp3.1,aes(target,sera))+geom_tile(aes(fill=normAUC),color="black",lwd=0.1)+
+  scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(1.5,8),values=c(0,1.5/6.5,6.5/6.5),na.value="gray40")+
+  #scale_fill_gradientn(colours=c("#FFFFFF","#003366"),limits=c(5,12),values=c(0,1),na.value="yellow")+
+  #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,430,by=5)))+
+  labs(x="RBD homolog",y="")+theme_classic(base_size=9)+
+  coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold"))
+
+p1
+
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib47_heatmap_normAUC_MAP-ancestors.pdf",sep="")))
+
+```
+
+Save output file.
+
+```{r outputs}
+dt_final %>%
+  mutate_if(is.numeric, round, digits=5) %>%
+  write.csv(file=config$final_variant_scores_lib47_file, row.names=F,quote=F)
+
+```
+
+
+
+
+
