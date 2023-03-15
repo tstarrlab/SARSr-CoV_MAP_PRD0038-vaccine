@@ -3,21 +3,12 @@
 # most CPUs to ever use at once
 max_cpus: 16
 
-# amplicons sequenced by PacBio for wildtype homologs pool
-amplicons: data/PacBio_amplicons.gb
-amplicons_RshSTT182: data/PacBio_amplicon_RshSTT182.gb
+# amplicons sequenced by PacBio (need for bc mapping even though we're not building PacBio reads)
 amplicons_PRD-0038: data/PacBio_amplicon_PRD0038.gb
-amplicons_SARS-CoV-1_2693: data/PacBio_amplicon_SARS1.gb
-amplicons_RsYN04: data/PacBio_amplicon_RsYN04.gb
-amplicons_RmYN02: data/PacBio_amplicon_RmYN02.gb
 
 # how to parse the amplicon
-feature_parse_specs: data/feature_parse_specs.yaml
-feature_parse_specs_RshSTT182: data/feature_parse_specs_RshSTT182.yaml
 feature_parse_specs_PRD-0038: data/feature_parse_specs_PRD0038.yaml
-feature_parse_specs_SARS-CoV-1_2693: data/feature_parse_specs_SARS1.yaml
-feature_parse_specs_RsYN04: data/feature_parse_specs_RsYN04.yaml
-feature_parse_specs_RmYN02: data/feature_parse_specs_RmYN02.yaml
+
 
 # do we get the sequencing data from the 'HutchServer' or 'SRA'?
 seqdata_source: HutchServer
