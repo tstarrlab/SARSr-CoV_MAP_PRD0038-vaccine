@@ -50,21 +50,17 @@ barcode_runs <- read.csv(file=config$barcode_runs,stringsAsFactors=F); barcode_r
 counts <- data.table(read.csv(file=config$variant_counts_file,stringsAsFactors=F))
 
 #read in barcode-variant lookup tables
-dt_Wh1 <- data.table(read.csv(file=config$WH1_bc_variant_lookup,stringsAsFactors=F))
-#remove pool2 and rename pool1 to be lib40 to mesh with other newly processed libraries
-dt_Wh1 <- dt_Wh1[library=="pool1",]
-dt_Wh1[,library:="lib40_SARSr-DMS"]
-dt_RshSTT182 <- data.table(read.csv(file=config$codon_variant_table_file_RshSTT182,stringsAsFactors=F))
-dt_PRD0038 <- data.table(read.csv(file=config$`codon_variant_table_file_PRD-0038`,stringsAsFactors=F))
-dt_SARS1 <- data.table(read.csv(file=config$`codon_variant_table_file_SARS-CoV-1_2693`,stringsAsFactors=F))
-#rename target to Urbani nomenclature
-dt_SARS1[,target:="SARS-CoV-1_Urbani"]
-dt_RsYN04 <- data.table(read.csv(file=config$codon_variant_table_file_RsYN04,stringsAsFactors=F))
-dt_RmYN02 <- data.table(read.csv(file=config$codon_variant_table_file_RmYN02,stringsAsFactors=F))
-dt_lib47 <- data.table(read.csv(file=config$codon_variant_table_file_lib47,stringsAsFactors=F))
+dt <- data.table(read.csv(file=config$codon_variant_table,stringsAsFactors=F))
 
-#merge, eliminate barcodes duplicated within a library
-dt <- rbind(dt_Wh1,dt_RshSTT182,dt_PRD0038,dt_SARS1,dt_RsYN04,dt_RmYN02,dt_lib47); setkey(dt,barcode,library)
+#rename some targets
+dt[target=="BA2",target:="SARS-CoV-2_BA2"]
+dt[target=="SARS-CoV-1_2693",target:="SARS-CoV-1_Urbani"]
+dt[target=="SARS-CoV-1_Urbani_HP03L",target:="SARS-CoV-1_Urbani"]
+dt[target=="Wuhan_Hu_1",target:="SARS-CoV-2_WH1"]
+
+setkey(dt,barcode,library)
+
+#eliminate duplicated barcodes
 duplicates <- dt[duplicated(dt,by=c("barcode","library")),.(library,barcode)] #the data.table duplciates function annoyingly only flags the first of each duplicate so doesn't intrinsically allow removal of both of the entries of the duplicate. So, flag what are duplciates, and then remove
 dt[,duplicate:=FALSE]
 for(i in 1:nrow(duplicates)){
@@ -72,16 +68,19 @@ for(i in 1:nrow(duplicates)){
 }
 dt <- dt[duplicate==FALSE,]; dt[,duplicate:=NULL]
 
-dt <- merge(counts, dt, by=c("library","barcode")); rm(dt_Wh1);rm(dt_RshSTT182);rm(dt_PRD0038);rm(dt_SARS1);rm(dt_RsYN04);rm(dt_RmYN02);rm(dt_lib47);rm(counts); rm(duplicates)
+dt <- merge(counts, dt, by=c("library","barcode"));rm(counts); rm(duplicates)
 
-samples_tetra <- data.frame(sample=sort(unique(paste(rep("tetra",5),formatC(barcode_runs[barcode_runs$sample_type=="tetra","concentration"], width=2,flag="0"),sep="_"))),conc=c(1/100,1/1000,1/10000,1/100000,0))
+samples_mouse1_3 <- data.frame(sample=sort(unique(paste(rep("mouse1-3",5),formatC(barcode_runs[barcode_runs$sample_type=="mouse1-3","concentration"], width=2,flag="0"),sep="_"))),conc=c(1/100,1/1000,1/10000,1/100000,0))
 
-samples_tri <- data.frame(sample=sort(unique(paste(rep("tri",5),formatC(barcode_runs[barcode_runs$sample_type=="tri","concentration"], width=2,flag="0"),sep="_"))),conc=c(1/100,1/1000,1/10000,1/100000,0))
+samples_mouse1_4 <- data.frame(sample=sort(unique(paste(rep("mouse1-4",5),formatC(barcode_runs[barcode_runs$sample_type=="mouse1-4","concentration"], width=2,flag="0"),sep="_"))),conc=c(1/100,1/1000,1/10000,1/100000,0))
 
-samples_SARS2mono <- data.frame(sample=sort(unique(paste(rep("SARS2mono",5),formatC(barcode_runs[barcode_runs$sample_type=="SARS2mono","concentration"], width=2,flag="0"),sep="_"))),conc=c(1/100,1/1000,1/10000,1/100000,0))
+samples_mouse1_5 <- data.frame(sample=sort(unique(paste(rep("mouse1-5",5),formatC(barcode_runs[barcode_runs$sample_type=="mouse1-5","concentration"], width=2,flag="0"),sep="_"))),conc=c(1/100,1/1000,1/10000,1/100000,0))
 
-samples_RmYN02mono <- data.frame(sample=sort(unique(paste(rep("RmYN02mono",5),formatC(barcode_runs[barcode_runs$sample_type=="RmYN02mono","concentration"], width=2,flag="0"),sep="_"))),conc=c(1/100,1/1000,1/10000,1/100000,0))
+samples_mouse1_6 <- data.frame(sample=sort(unique(paste(rep("mouse1-6",5),formatC(barcode_runs[barcode_runs$sample_type=="mouse1-6","concentration"], width=2,flag="0"),sep="_"))),conc=c(1/100,1/1000,1/10000,1/100000,0))
 
+samples_mouse2_3 <- data.frame(sample=sort(unique(paste(rep("mouse2-3",5),formatC(barcode_runs[barcode_runs$sample_type=="mouse2-3","concentration"], width=2,flag="0"),sep="_"))),conc=c(1/100,1/1000,1/10000,1/100000,0))
+
+samples_mouse2_6 <- data.frame(sample=sort(unique(paste(rep("mouse2-6",5),formatC(barcode_runs[barcode_runs$sample_type=="mouse2-6","concentration"], width=2,flag="0"),sep="_"))),conc=c(1/100,1/1000,1/10000,1/100000,0))
 ```
 
  Convert from Illumina read counts to estimates of the number of cells that were sorted into a bin, and add some other useful information to our data frame.
@@ -110,7 +109,7 @@ dt[n_aa_substitutions == 1 & !grepl("*",aa_substitutions,fixed=T), variant_class
 dt[n_aa_substitutions > 1 & !grepl("*",aa_substitutions,fixed=T), variant_class := ">1 nonsynonymous"]
 
 #cast the data frame into wide format
-dt <- dcast(dt, library + barcode + target + variant_class + aa_substitutions + n_aa_substitutions ~ sample, value.var="count.norm")
+dt <- dcast(dt, library + sublibrary + barcode + target + variant_class + aa_substitutions + n_aa_substitutions ~ sample, value.var="count.norm")
 
 ```
 
@@ -119,108 +118,155 @@ Next, for each barcode at each of the sera concentrations, calculate the "mean b
 
 We do not use the fluorescence boundaries of the FACS bins in our calculations here, but we provide them for posterity's sake below.
 
-`(-288, 60), (61, 1256), (1257, 26751), (26752, 262143)`
+`(-252, 146), (146, 1731), (1731, 20558), (20559, 262143)`
 
 ```{r calculate_mean_bin}
 #function that returns mean bin and sum of counts for four bins cell counts. Includes cutoffs for bimodal sample splits to filter out
 calc.meanbin <- function(vec, split13filter=0.4, split24filter=0.4, split14filter=0.2){
   total <- sum(vec)
   if(is.na(total) | (vec[1] > split13filter*total & vec[3] > split13filter*total) | (vec[2] > split24filter*total & vec[4] > split24filter*total) | (vec[1] > split14filter*total & vec[4] > split14filter*total)){
-    return(list(NA,NA))
+    return(list(as.numeric(NA),as.numeric(NA)))
   }else{
-    return( list((vec[1]*1+vec[2]*2+vec[3]*3+vec[4]*4)/(vec[1]+vec[2]+vec[3]+vec[4]), total) )
+    return( list(as.numeric((vec[1]*1+vec[2]*2+vec[3]*3+vec[4]*4)/(vec[1]+vec[2]+vec[3]+vec[4])), as.numeric(total)) )
   }
 }
   
 
 #iterate through titration samples, compute mean_bin and total_count for each barcode variant
-#tetra
-for(i in 1:nrow(samples_tetra)){ #iterate through titeseq sample (concentration)
-  meanbin_out <- paste(samples_tetra[i,"sample"],"_meanbin",sep="") #define the header name for the meanbin output for the given concentration sample
-  totalcount_out <- paste(samples_tetra[i,"sample"],"_totalcount",sep="") #define the header name for the total cell count output for the given concentration sample
-  bin1_in <- paste(samples_tetra[i,"sample"],"_bin1",sep="") #define the header names for the input cell counts for bins1-4 of the given concnetration sample
-  bin2_in <- paste(samples_tetra[i,"sample"],"_bin2",sep="")
-  bin3_in <- paste(samples_tetra[i,"sample"],"_bin3",sep="")
-  bin4_in <- paste(samples_tetra[i,"sample"],"_bin4",sep="")
+#mouse1_3
+for(i in 1:nrow(samples_mouse1_3)){ #iterate through titeseq sample (concentration)
+  meanbin_out <- paste(samples_mouse1_3[i,"sample"],"_meanbin",sep="") #define the header name for the meanbin output for the given concentration sample
+  totalcount_out <- paste(samples_mouse1_3[i,"sample"],"_totalcount",sep="") #define the header name for the total cell count output for the given concentration sample
+  bin1_in <- paste(samples_mouse1_3[i,"sample"],"_bin1",sep="") #define the header names for the input cell counts for bins1-4 of the given concnetration sample
+  bin2_in <- paste(samples_mouse1_3[i,"sample"],"_bin2",sep="")
+  bin3_in <- paste(samples_mouse1_3[i,"sample"],"_bin3",sep="")
+  bin4_in <- paste(samples_mouse1_3[i,"sample"],"_bin4",sep="")
   dt[,c(meanbin_out,totalcount_out) := calc.meanbin(c(get(bin1_in),get(bin2_in),get(bin3_in),get(bin4_in))),by=c("barcode","library")]
 }
 
-#tri
-for(i in 1:nrow(samples_tri)){ #iterate through titeseq sample (concentration)
-  meanbin_out <- paste(samples_tri[i,"sample"],"_meanbin",sep="") #define the header name for the meanbin output for the given concentration sample
-  totalcount_out <- paste(samples_tri[i,"sample"],"_totalcount",sep="") #define the header name for the total cell count output for the given concentration sample
-  bin1_in <- paste(samples_tri[i,"sample"],"_bin1",sep="") #define the header names for the input cell counts for bins1-4 of the given concnetration sample
-  bin2_in <- paste(samples_tri[i,"sample"],"_bin2",sep="")
-  bin3_in <- paste(samples_tri[i,"sample"],"_bin3",sep="")
-  bin4_in <- paste(samples_tri[i,"sample"],"_bin4",sep="")
+#mouse1_4
+for(i in 1:nrow(samples_mouse1_4)){ #iterate through titeseq sample (concentration)
+  meanbin_out <- paste(samples_mouse1_4[i,"sample"],"_meanbin",sep="") #define the header name for the meanbin output for the given concentration sample
+  totalcount_out <- paste(samples_mouse1_4[i,"sample"],"_totalcount",sep="") #define the header name for the total cell count output for the given concentration sample
+  bin1_in <- paste(samples_mouse1_4[i,"sample"],"_bin1",sep="") #define the header names for the input cell counts for bins1-4 of the given concnetration sample
+  bin2_in <- paste(samples_mouse1_4[i,"sample"],"_bin2",sep="")
+  bin3_in <- paste(samples_mouse1_4[i,"sample"],"_bin3",sep="")
+  bin4_in <- paste(samples_mouse1_4[i,"sample"],"_bin4",sep="")
   dt[,c(meanbin_out,totalcount_out) := calc.meanbin(c(get(bin1_in),get(bin2_in),get(bin3_in),get(bin4_in))),by=c("barcode","library")]
 }
 
-#SARS2mono
-for(i in 1:nrow(samples_SARS2mono)){ #iterate through titeseq sample (concentration)
-  meanbin_out <- paste(samples_SARS2mono[i,"sample"],"_meanbin",sep="") #define the header name for the meanbin output for the given concentration sample
-  totalcount_out <- paste(samples_SARS2mono[i,"sample"],"_totalcount",sep="") #define the header name for the total cell count output for the given concentration sample
-  bin1_in <- paste(samples_SARS2mono[i,"sample"],"_bin1",sep="") #define the header names for the input cell counts for bins1-4 of the given concnetration sample
-  bin2_in <- paste(samples_SARS2mono[i,"sample"],"_bin2",sep="")
-  bin3_in <- paste(samples_SARS2mono[i,"sample"],"_bin3",sep="")
-  bin4_in <- paste(samples_SARS2mono[i,"sample"],"_bin4",sep="")
+#mouse1_5
+for(i in 1:nrow(samples_mouse1_5)){ #iterate through titeseq sample (concentration)
+  meanbin_out <- paste(samples_mouse1_5[i,"sample"],"_meanbin",sep="") #define the header name for the meanbin output for the given concentration sample
+  totalcount_out <- paste(samples_mouse1_5[i,"sample"],"_totalcount",sep="") #define the header name for the total cell count output for the given concentration sample
+  bin1_in <- paste(samples_mouse1_5[i,"sample"],"_bin1",sep="") #define the header names for the input cell counts for bins1-4 of the given concnetration sample
+  bin2_in <- paste(samples_mouse1_5[i,"sample"],"_bin2",sep="")
+  bin3_in <- paste(samples_mouse1_5[i,"sample"],"_bin3",sep="")
+  bin4_in <- paste(samples_mouse1_5[i,"sample"],"_bin4",sep="")
   dt[,c(meanbin_out,totalcount_out) := calc.meanbin(c(get(bin1_in),get(bin2_in),get(bin3_in),get(bin4_in))),by=c("barcode","library")]
 }
 
-#RmYN02mono
-for(i in 1:nrow(samples_RmYN02mono)){ #iterate through titeseq sample (concentration)
-  meanbin_out <- paste(samples_RmYN02mono[i,"sample"],"_meanbin",sep="") #define the header name for the meanbin output for the given concentration sample
-  totalcount_out <- paste(samples_RmYN02mono[i,"sample"],"_totalcount",sep="") #define the header name for the total cell count output for the given concentration sample
-  bin1_in <- paste(samples_RmYN02mono[i,"sample"],"_bin1",sep="") #define the header names for the input cell counts for bins1-4 of the given concnetration sample
-  bin2_in <- paste(samples_RmYN02mono[i,"sample"],"_bin2",sep="")
-  bin3_in <- paste(samples_RmYN02mono[i,"sample"],"_bin3",sep="")
-  bin4_in <- paste(samples_RmYN02mono[i,"sample"],"_bin4",sep="")
+#mouse1_6
+for(i in 1:nrow(samples_mouse1_6)){ #iterate through titeseq sample (concentration)
+  meanbin_out <- paste(samples_mouse1_6[i,"sample"],"_meanbin",sep="") #define the header name for the meanbin output for the given concentration sample
+  totalcount_out <- paste(samples_mouse1_6[i,"sample"],"_totalcount",sep="") #define the header name for the total cell count output for the given concentration sample
+  bin1_in <- paste(samples_mouse1_6[i,"sample"],"_bin1",sep="") #define the header names for the input cell counts for bins1-4 of the given concnetration sample
+  bin2_in <- paste(samples_mouse1_6[i,"sample"],"_bin2",sep="")
+  bin3_in <- paste(samples_mouse1_6[i,"sample"],"_bin3",sep="")
+  bin4_in <- paste(samples_mouse1_6[i,"sample"],"_bin4",sep="")
   dt[,c(meanbin_out,totalcount_out) := calc.meanbin(c(get(bin1_in),get(bin2_in),get(bin3_in),get(bin4_in))),by=c("barcode","library")]
 }
+
+#mouse2_3
+for(i in 1:nrow(samples_mouse2_3)){ #iterate through titeseq sample (concentration)
+  meanbin_out <- paste(samples_mouse2_3[i,"sample"],"_meanbin",sep="") #define the header name for the meanbin output for the given concentration sample
+  totalcount_out <- paste(samples_mouse2_3[i,"sample"],"_totalcount",sep="") #define the header name for the total cell count output for the given concentration sample
+  bin1_in <- paste(samples_mouse2_3[i,"sample"],"_bin1",sep="") #define the header names for the input cell counts for bins1-4 of the given concnetration sample
+  bin2_in <- paste(samples_mouse2_3[i,"sample"],"_bin2",sep="")
+  bin3_in <- paste(samples_mouse2_3[i,"sample"],"_bin3",sep="")
+  bin4_in <- paste(samples_mouse2_3[i,"sample"],"_bin4",sep="")
+  dt[,c(meanbin_out,totalcount_out) := calc.meanbin(c(get(bin1_in),get(bin2_in),get(bin3_in),get(bin4_in))),by=c("barcode","library")]
+}
+
+#mouse2_6
+for(i in 1:nrow(samples_mouse2_6)){ #iterate through titeseq sample (concentration)
+  meanbin_out <- paste(samples_mouse2_6[i,"sample"],"_meanbin",sep="") #define the header name for the meanbin output for the given concentration sample
+  totalcount_out <- paste(samples_mouse2_6[i,"sample"],"_totalcount",sep="") #define the header name for the total cell count output for the given concentration sample
+  bin1_in <- paste(samples_mouse2_6[i,"sample"],"_bin1",sep="") #define the header names for the input cell counts for bins1-4 of the given concnetration sample
+  bin2_in <- paste(samples_mouse2_6[i,"sample"],"_bin2",sep="")
+  bin3_in <- paste(samples_mouse2_6[i,"sample"],"_bin3",sep="")
+  bin4_in <- paste(samples_mouse2_6[i,"sample"],"_bin4",sep="")
+  dt[,c(meanbin_out,totalcount_out) := calc.meanbin(c(get(bin1_in),get(bin2_in),get(bin3_in),get(bin4_in))),by=c("barcode","library")]
+}
+
 ```
 
-## Fit binding curves
+## Calculate per-bc AUC metrics
 We will calculate a simple AUC metric across each barcode's titration series. We will also include a minimum cell count that is required for a meanbin estimate to be used in the titration fit, and a minimum number of concentrations with determined meanbin that is required for a titration to be reported. 
 
 ```{r fit_titrations}
 #For QC and filtering, output columns giving the average number of cells that were sampled for a barcode across the 9 sample concentrations, and a value for the number of meanbin estimates that were removed for being below the # of cells cutoff
 cutoff <- 3
 
-dt[,tetra_avgcount := mean(c(tetra_01_totalcount,tetra_02_totalcount,tetra_03_totalcount,
-                             tetra_04_totalcount,tetra_05_totalcount),na.rm=T),by=c("library","barcode")]
+#mouse1-3
+dt[,`mouse1-3_avgcount` := mean(c(`mouse1-3_01_totalcount`,`mouse1-3_02_totalcount`,`mouse1-3_03_totalcount`,
+                             `mouse1-3_04_totalcount`,`mouse1-3_05_totalcount`),na.rm=T),by=c("library","barcode")]
 
 #number of concentrations at which meanbin is calculated from < cutoff cells or is missing b/c filtered for bimodality
-dt[,tetra_min_cell_filtered := sum(c(c(tetra_01_totalcount,tetra_02_totalcount,tetra_03_totalcount,
-                                       tetra_04_totalcount,tetra_05_totalcount)<cutoff,
-                                     is.na(c(tetra_01_totalcount,tetra_02_totalcount,tetra_03_totalcount,
-                                             tetra_04_totalcount,tetra_05_totalcount))),na.rm=T),by=c("library","barcode")]
+dt[,`mouse1-3_min_cell_filtered` := sum(c(c(`mouse1-3_01_totalcount`,`mouse1-3_02_totalcount`,`mouse1-3_03_totalcount`,
+                                       `mouse1-3_04_totalcount`,`mouse1-3_05_totalcount`)<cutoff,
+                                     is.na(c(`mouse1-3_01_totalcount`,`mouse1-3_02_totalcount`,`mouse1-3_03_totalcount`,
+                                       `mouse1-3_04_totalcount`,`mouse1-3_05_totalcount`))),na.rm=T),by=c("library","barcode")]
 
-dt[,tri_avgcount := mean(c(tri_01_totalcount,tri_02_totalcount,tri_03_totalcount,
-                             tri_04_totalcount,tri_05_totalcount),na.rm=T),by=c("library","barcode")]
-
-#number of concentrations at which meanbin is calculated from < cutoff cells or is missing b/c filtered for bimodality
-dt[,tri_min_cell_filtered := sum(c(c(tri_01_totalcount,tri_02_totalcount,tri_03_totalcount,
-                                       tri_04_totalcount,tri_05_totalcount)<cutoff,
-                                     is.na(c(tri_01_totalcount,tri_02_totalcount,tri_03_totalcount,
-                                             tri_04_totalcount,tri_05_totalcount))),na.rm=T),by=c("library","barcode")]
-
-dt[,SARS2mono_avgcount := mean(c(SARS2mono_01_totalcount,SARS2mono_02_totalcount,SARS2mono_03_totalcount,
-                             SARS2mono_04_totalcount,SARS2mono_05_totalcount),na.rm=T),by=c("library","barcode")]
+#mouse1-4
+dt[,`mouse1-4_avgcount` := mean(c(`mouse1-4_01_totalcount`,`mouse1-4_02_totalcount`,`mouse1-4_03_totalcount`,
+                             `mouse1-4_04_totalcount`,`mouse1-4_05_totalcount`),na.rm=T),by=c("library","barcode")]
 
 #number of concentrations at which meanbin is calculated from < cutoff cells or is missing b/c filtered for bimodality
-dt[,SARS2mono_min_cell_filtered := sum(c(c(SARS2mono_01_totalcount,SARS2mono_02_totalcount,SARS2mono_03_totalcount,
-                                       SARS2mono_04_totalcount,SARS2mono_05_totalcount)<cutoff,
-                                     is.na(c(SARS2mono_01_totalcount,SARS2mono_02_totalcount,SARS2mono_03_totalcount,
-                                             SARS2mono_04_totalcount,SARS2mono_05_totalcount))),na.rm=T),by=c("library","barcode")]
+dt[,`mouse1-4_min_cell_filtered` := sum(c(c(`mouse1-4_01_totalcount`,`mouse1-4_02_totalcount`,`mouse1-4_03_totalcount`,
+                                       `mouse1-4_04_totalcount`,`mouse1-4_05_totalcount`)<cutoff,
+                                     is.na(c(`mouse1-4_01_totalcount`,`mouse1-4_02_totalcount`,`mouse1-4_03_totalcount`,
+                                       `mouse1-4_04_totalcount`,`mouse1-4_05_totalcount`))),na.rm=T),by=c("library","barcode")]
 
-dt[,RmYN02mono_avgcount := mean(c(RmYN02mono_01_totalcount,RmYN02mono_02_totalcount,RmYN02mono_03_totalcount,
-                             RmYN02mono_04_totalcount,RmYN02mono_05_totalcount),na.rm=T),by=c("library","barcode")]
+#mouse1-5
+dt[,`mouse1-5_avgcount` := mean(c(`mouse1-5_01_totalcount`,`mouse1-5_02_totalcount`,`mouse1-5_03_totalcount`,
+                             `mouse1-5_04_totalcount`,`mouse1-5_05_totalcount`),na.rm=T),by=c("library","barcode")]
 
 #number of concentrations at which meanbin is calculated from < cutoff cells or is missing b/c filtered for bimodality
-dt[,RmYN02mono_min_cell_filtered := sum(c(c(RmYN02mono_01_totalcount,RmYN02mono_02_totalcount,RmYN02mono_03_totalcount,
-                                       RmYN02mono_04_totalcount,RmYN02mono_05_totalcount)<cutoff,
-                                     is.na(c(RmYN02mono_01_totalcount,RmYN02mono_02_totalcount,RmYN02mono_03_totalcount,
-                                             RmYN02mono_04_totalcount,RmYN02mono_05_totalcount))),na.rm=T),by=c("library","barcode")]
+dt[,`mouse1-5_min_cell_filtered` := sum(c(c(`mouse1-5_01_totalcount`,`mouse1-5_02_totalcount`,`mouse1-5_03_totalcount`,
+                                       `mouse1-5_04_totalcount`,`mouse1-5_05_totalcount`)<cutoff,
+                                     is.na(c(`mouse1-5_01_totalcount`,`mouse1-5_02_totalcount`,`mouse1-5_03_totalcount`,
+                                       `mouse1-5_04_totalcount`,`mouse1-5_05_totalcount`))),na.rm=T),by=c("library","barcode")]
+
+#mouse1-6
+dt[,`mouse1-6_avgcount` := mean(c(`mouse1-6_01_totalcount`,`mouse1-6_02_totalcount`,`mouse1-6_03_totalcount`,
+                             `mouse1-6_04_totalcount`,`mouse1-6_05_totalcount`),na.rm=T),by=c("library","barcode")]
+
+#number of concentrations at which meanbin is calculated from < cutoff cells or is missing b/c filtered for bimodality
+dt[,`mouse1-6_min_cell_filtered` := sum(c(c(`mouse1-6_01_totalcount`,`mouse1-6_02_totalcount`,`mouse1-6_03_totalcount`,
+                                       `mouse1-6_04_totalcount`,`mouse1-6_05_totalcount`)<cutoff,
+                                     is.na(c(`mouse1-6_01_totalcount`,`mouse1-6_02_totalcount`,`mouse1-6_03_totalcount`,
+                                       `mouse1-6_04_totalcount`,`mouse1-6_05_totalcount`))),na.rm=T),by=c("library","barcode")]
+
+#mouse2-3
+dt[,`mouse2-3_avgcount` := mean(c(`mouse2-3_01_totalcount`,`mouse2-3_02_totalcount`,`mouse2-3_03_totalcount`,
+                             `mouse2-3_04_totalcount`,`mouse2-3_05_totalcount`),na.rm=T),by=c("library","barcode")]
+
+#number of concentrations at which meanbin is calculated from < cutoff cells or is missing b/c filtered for bimodality
+dt[,`mouse2-3_min_cell_filtered` := sum(c(c(`mouse2-3_01_totalcount`,`mouse2-3_02_totalcount`,`mouse2-3_03_totalcount`,
+                                       `mouse2-3_04_totalcount`,`mouse2-3_05_totalcount`)<cutoff,
+                                     is.na(c(`mouse2-3_01_totalcount`,`mouse2-3_02_totalcount`,`mouse2-3_03_totalcount`,
+                                       `mouse2-3_04_totalcount`,`mouse2-3_05_totalcount`))),na.rm=T),by=c("library","barcode")]
+
+#mouse2-6
+dt[,`mouse2-6_avgcount` := mean(c(`mouse2-6_01_totalcount`,`mouse2-6_02_totalcount`,`mouse2-6_03_totalcount`,
+                             `mouse2-6_04_totalcount`,`mouse2-6_05_totalcount`),na.rm=T),by=c("library","barcode")]
+
+#number of concentrations at which meanbin is calculated from < cutoff cells or is missing b/c filtered for bimodality
+dt[,`mouse2-6_min_cell_filtered` := sum(c(c(`mouse2-6_01_totalcount`,`mouse2-6_02_totalcount`,`mouse2-6_03_totalcount`,
+                                       `mouse2-6_04_totalcount`,`mouse2-6_05_totalcount`)<cutoff,
+                                     is.na(c(`mouse2-6_01_totalcount`,`mouse2-6_02_totalcount`,`mouse2-6_03_totalcount`,
+                                       `mouse2-6_04_totalcount`,`mouse2-6_05_totalcount`))),na.rm=T),by=c("library","barcode")]
 
 #function that calculates an AUC metric across four log-spaced points and a zero-point for substraction, including an option to filter below certain thresholds for average cells across all samples, and number of samples below a cutoff of cells
 fit.auc <- function(x.vals,y.vals,zero.val,count.vals,zero.count.val,min.cfu=cutoff){
@@ -238,105 +284,145 @@ fit.auc <- function(x.vals,y.vals,zero.val,count.vals,zero.count.val,min.cfu=cut
   }
 }
 
-#fit auc to tetra sera data for each barcode
-dt[,c("tetra_AUC") := fit.auc(x.vals=log10(samples_tetra$conc[1:4]),
-                              y.vals=c(tetra_01_meanbin,tetra_02_meanbin,tetra_03_meanbin,tetra_04_meanbin),
-                      zero.val=tetra_05_meanbin,
-                      count.vals=c(tetra_01_totalcount,tetra_02_totalcount,tetra_03_totalcount,tetra_04_totalcount),
-                      zero.count.val=tetra_05_totalcount),
+#fit auc to mouse1-3 mouse1_3 sera data for each barcode
+dt[,c("mouse1-3_AUC") := fit.auc(x.vals=log10(samples_mouse1_3$conc[1:4]),
+                              y.vals=c(`mouse1-3_01_meanbin`,`mouse1-3_02_meanbin`,`mouse1-3_03_meanbin`,`mouse1-3_04_meanbin`),
+                      zero.val=`mouse1-3_05_meanbin`,
+                      count.vals=c(`mouse1-3_01_totalcount`,`mouse1-3_02_totalcount`,`mouse1-3_03_totalcount`,`mouse1-3_04_totalcount`),
+                      zero.count.val=`mouse1-3_05_totalcount`),
    by=c("library","barcode")]
 
-#fit auc to tri sera data for each barcode
-dt[,c("tri_AUC") := fit.auc(x.vals=log10(samples_tri$conc[1:4]),
-                              y.vals=c(tri_01_meanbin,tri_02_meanbin,tri_03_meanbin,tri_04_meanbin),
-                      zero.val=tri_05_meanbin,
-                      count.vals=c(tri_01_totalcount,tri_02_totalcount,tri_03_totalcount,tri_04_totalcount),
-                      zero.count.val=tri_05_totalcount),
+#fit auc to mouse1-4 mouse1_4 sera data for each barcode
+dt[,c("mouse1-4_AUC") := fit.auc(x.vals=log10(samples_mouse1_4$conc[1:4]),
+                              y.vals=c(`mouse1-4_01_meanbin`,`mouse1-4_02_meanbin`,`mouse1-4_03_meanbin`,`mouse1-4_04_meanbin`),
+                      zero.val=`mouse1-4_05_meanbin`,
+                      count.vals=c(`mouse1-4_01_totalcount`,`mouse1-4_02_totalcount`,`mouse1-4_03_totalcount`,`mouse1-4_04_totalcount`),
+                      zero.count.val=`mouse1-4_05_totalcount`),
    by=c("library","barcode")]
 
-#fit auc to SARS2mono sera data for each barcode
-dt[,c("SARS2mono_AUC") := fit.auc(x.vals=log10(samples_SARS2mono$conc[1:4]),
-                              y.vals=c(SARS2mono_01_meanbin,SARS2mono_02_meanbin,SARS2mono_03_meanbin,SARS2mono_04_meanbin),
-                      zero.val=SARS2mono_05_meanbin,
-                      count.vals=c(SARS2mono_01_totalcount,SARS2mono_02_totalcount,SARS2mono_03_totalcount,SARS2mono_04_totalcount),
-                      zero.count.val=SARS2mono_05_totalcount),
+#fit auc to mouse1-5 mouse1_5 sera data for each barcode
+dt[,c("mouse1-5_AUC") := fit.auc(x.vals=log10(samples_mouse1_5$conc[1:4]),
+                              y.vals=c(`mouse1-5_01_meanbin`,`mouse1-5_02_meanbin`,`mouse1-5_03_meanbin`,`mouse1-5_04_meanbin`),
+                      zero.val=`mouse1-5_05_meanbin`,
+                      count.vals=c(`mouse1-5_01_totalcount`,`mouse1-5_02_totalcount`,`mouse1-5_03_totalcount`,`mouse1-5_04_totalcount`),
+                      zero.count.val=`mouse1-5_05_totalcount`),
    by=c("library","barcode")]
 
-#fit auc to RmYN02mono sera data for each barcode
-dt[,c("RmYN02mono_AUC") := fit.auc(x.vals=log10(samples_RmYN02mono$conc[1:4]),
-                              y.vals=c(RmYN02mono_01_meanbin,RmYN02mono_02_meanbin,RmYN02mono_03_meanbin,RmYN02mono_04_meanbin),
-                      zero.val=RmYN02mono_05_meanbin,
-                      count.vals=c(RmYN02mono_01_totalcount,RmYN02mono_02_totalcount,RmYN02mono_03_totalcount,RmYN02mono_04_totalcount),
-                      zero.count.val=RmYN02mono_05_totalcount),
+#fit auc to mouse1-6 mouse1_6 sera data for each barcode
+dt[,c("mouse1-6_AUC") := fit.auc(x.vals=log10(samples_mouse1_6$conc[1:4]),
+                              y.vals=c(`mouse1-6_01_meanbin`,`mouse1-6_02_meanbin`,`mouse1-6_03_meanbin`,`mouse1-6_04_meanbin`),
+                      zero.val=`mouse1-6_05_meanbin`,
+                      count.vals=c(`mouse1-6_01_totalcount`,`mouse1-6_02_totalcount`,`mouse1-6_03_totalcount`,`mouse1-6_04_totalcount`),
+                      zero.count.val=`mouse1-6_05_totalcount`),
    by=c("library","barcode")]
+
+#fit auc to mouse2-3 mouse2_3 sera data for each barcode
+dt[,c("mouse2-3_AUC") := fit.auc(x.vals=log10(samples_mouse2_3$conc[1:4]),
+                              y.vals=c(`mouse2-3_01_meanbin`,`mouse2-3_02_meanbin`,`mouse2-3_03_meanbin`,`mouse2-3_04_meanbin`),
+                      zero.val=`mouse2-3_05_meanbin`,
+                      count.vals=c(`mouse2-3_01_totalcount`,`mouse2-3_02_totalcount`,`mouse2-3_03_totalcount`,`mouse2-3_04_totalcount`),
+                      zero.count.val=`mouse2-3_05_totalcount`),
+   by=c("library","barcode")]
+
+#fit auc to mouse2-6 mouse2_6 sera data for each barcode
+dt[,c("mouse2-6_AUC") := fit.auc(x.vals=log10(samples_mouse2_6$conc[1:4]),
+                              y.vals=c(`mouse2-6_01_meanbin`,`mouse2-6_02_meanbin`,`mouse2-6_03_meanbin`,`mouse2-6_04_meanbin`),
+                      zero.val=`mouse2-6_05_meanbin`,
+                      count.vals=c(`mouse2-6_01_totalcount`,`mouse2-6_02_totalcount`,`mouse2-6_03_totalcount`,`mouse2-6_04_totalcount`),
+                      zero.count.val=`mouse2-6_05_totalcount`),
+   by=c("library","barcode")]
+
 
 ```
 ## QC and sanity checks
-We will do some QC to make sure we got good titration curves for most of our library barcodes. We will also spot check titration curves from across our measurement range, and spot check curves whose fit parameters hit the different boundary conditions of the fit variables.
-
-We successfully generated AUC estimates for `r sum(!is.na(dt$tetra_AUC))/length(!is.na(dt$tetra_AUC))` of our tetra sera measurements -- `r sum(!is.na(dt[library=="lib40_SARSr-DMS",tetra_AUC]))/nrow(dt[library=="lib40_SARSr-DMS",])` of the SARSr DMS pool barcodes, and `r sum(!is.na(dt[library=="lib47_SARSr-wts",tetra_AUC]))/nrow(dt[library=="lib47_SARSr-wts",])` of the SARSr wildtypes barcodes (which we expect some to be missing because they were in the PacBio but not in the underlying genetic pool that was used in this experiment.
-
+We will do some QC to make sure we got good titration curves for most of our library barcodes.
 
 Let's visualize the AUC binding measurements as violin plots for the different wildtype targets, for each serum metric.
 
-```{r binding_distribution_vioplot_tetra, echo=T, fig.width=18, fig.height=18, fig.align="center", dpi=300,dev="png"}
-p1 <- ggplot(dt[!is.na(tetra_AUC),],aes(x=variant_class,y=tetra_AUC))+
+```{r binding_distribution_vioplot_mouse1-3, echo=T, fig.width=18, fig.height=18, fig.align="center", dpi=300,dev="png"}
+p1 <- ggplot(dt[!is.na(`mouse1-3_AUC`),],aes(x=variant_class,y=`mouse1-3_AUC`))+
   geom_violin(scale="width")+stat_summary(fun=median,geom="point",size=1)+
-  ggtitle("tetra sera AUC")+xlab("variant class")+theme(axis.text.x=element_text(angle=-90,hjust=0))+
+  ggtitle("mouse1-3 sera AUC")+xlab("variant class")+theme(axis.text.x=element_text(angle=-90,hjust=0))+
   facet_wrap(~library+target,nrow=10)
 
 grid.arrange(p1,ncol=1)
 
 #save pdf
-invisible(dev.print(pdf, paste(config$sera_delta_AUC_dir,"/violin-plot_AUC-by-target_tetra.pdf",sep="")))
+invisible(dev.print(pdf, paste(config$sera_delta_AUC_dir,"/violin-plot_AUC-by-target_mouse1-3.pdf",sep="")))
 ```
 
-```{r binding_distribution_vioplot_tri, echo=T, fig.width=18, fig.height=18, fig.align="center", dpi=300,dev="png"}
-p1 <- ggplot(dt[!is.na(tri_AUC),],aes(x=variant_class,y=tri_AUC))+
+```{r binding_distribution_vioplot_mouse1-4, echo=T, fig.width=18, fig.height=18, fig.align="center", dpi=300,dev="png"}
+p1 <- ggplot(dt[!is.na(`mouse1-4_AUC`),],aes(x=variant_class,y=`mouse1-4_AUC`))+
   geom_violin(scale="width")+stat_summary(fun=median,geom="point",size=1)+
-  ggtitle("tri sera AUC")+xlab("variant class")+theme(axis.text.x=element_text(angle=-90,hjust=0))+
+  ggtitle("mouse1-4 sera AUC")+xlab("variant class")+theme(axis.text.x=element_text(angle=-90,hjust=0))+
   facet_wrap(~library+target,nrow=10)
 
 grid.arrange(p1,ncol=1)
 
 #save pdf
-invisible(dev.print(pdf, paste(config$sera_delta_AUC_dir,"/violin-plot_AUC-by-target_tri.pdf",sep="")))
+invisible(dev.print(pdf, paste(config$sera_delta_AUC_dir,"/violin-plot_AUC-by-target_mouse1-4.pdf",sep="")))
 ```
-
-```{r binding_distribution_vioplot_SARS2mono, echo=T, fig.width=18, fig.height=18, fig.align="center", dpi=300,dev="png"}
-p1 <- ggplot(dt[!is.na(SARS2mono_AUC),],aes(x=variant_class,y=SARS2mono_AUC))+
+```{r binding_distribution_vioplot_mouse1-5, echo=T, fig.width=18, fig.height=18, fig.align="center", dpi=300,dev="png"}
+p1 <- ggplot(dt[!is.na(`mouse1-5_AUC`),],aes(x=variant_class,y=`mouse1-5_AUC`))+
   geom_violin(scale="width")+stat_summary(fun=median,geom="point",size=1)+
-  ggtitle("SARS2mono sera AUC")+xlab("variant class")+theme(axis.text.x=element_text(angle=-90,hjust=0))+
+  ggtitle("mouse1-5 sera AUC")+xlab("variant class")+theme(axis.text.x=element_text(angle=-90,hjust=0))+
   facet_wrap(~library+target,nrow=10)
 
 grid.arrange(p1,ncol=1)
 
 #save pdf
-invisible(dev.print(pdf, paste(config$sera_delta_AUC_dir,"/violin-plot_AUC-by-target_SARS2mono.pdf",sep="")))
+invisible(dev.print(pdf, paste(config$sera_delta_AUC_dir,"/violin-plot_AUC-by-target_mouse1-5.pdf",sep="")))
 ```
 
-```{r binding_distribution_vioplot_RmYN02mono, echo=T, fig.width=18, fig.height=18, fig.align="center", dpi=300,dev="png"}
-p1 <- ggplot(dt[!is.na(RmYN02mono_AUC),],aes(x=variant_class,y=RmYN02mono_AUC))+
+```{r binding_distribution_vioplot_mouse1-6, echo=T, fig.width=18, fig.height=18, fig.align="center", dpi=300,dev="png"}
+p1 <- ggplot(dt[!is.na(`mouse1-6_AUC`),],aes(x=variant_class,y=`mouse1-6_AUC`))+
   geom_violin(scale="width")+stat_summary(fun=median,geom="point",size=1)+
-  ggtitle("RmYN02mono sera AUC")+xlab("variant class")+theme(axis.text.x=element_text(angle=-90,hjust=0))+
+  ggtitle("mouse1-6 sera AUC")+xlab("variant class")+theme(axis.text.x=element_text(angle=-90,hjust=0))+
   facet_wrap(~library+target,nrow=10)
 
 grid.arrange(p1,ncol=1)
 
 #save pdf
-invisible(dev.print(pdf, paste(config$sera_delta_AUC_dir,"/violin-plot_AUC-by-target_RmYN02mono.pdf",sep="")))
+invisible(dev.print(pdf, paste(config$sera_delta_AUC_dir,"/violin-plot_AUC-by-target_mouse1-6.pdf",sep="")))
 ```
+
+```{r binding_distribution_vioplot_mouse2-3, echo=T, fig.width=18, fig.height=18, fig.align="center", dpi=300,dev="png"}
+p1 <- ggplot(dt[!is.na(`mouse2-3_AUC`),],aes(x=variant_class,y=`mouse2-3_AUC`))+
+  geom_violin(scale="width")+stat_summary(fun=median,geom="point",size=1)+
+  ggtitle("mouse2-3 sera AUC")+xlab("variant class")+theme(axis.text.x=element_text(angle=-90,hjust=0))+
+  facet_wrap(~library+target,nrow=10)
+
+grid.arrange(p1,ncol=1)
+
+#save pdf
+invisible(dev.print(pdf, paste(config$sera_delta_AUC_dir,"/violin-plot_AUC-by-target_mouse2-3.pdf",sep="")))
+```
+
+```{r binding_distribution_vioplot_mouse2-6, echo=T, fig.width=18, fig.height=18, fig.align="center", dpi=300,dev="png"}
+p1 <- ggplot(dt[!is.na(`mouse2-6_AUC`),],aes(x=variant_class,y=`mouse2-6_AUC`))+
+  geom_violin(scale="width")+stat_summary(fun=median,geom="point",size=1)+
+  ggtitle("mouse2-6 sera AUC")+xlab("variant class")+theme(axis.text.x=element_text(angle=-90,hjust=0))+
+  facet_wrap(~library+target,nrow=10)
+
+grid.arrange(p1,ncol=1)
+
+#save pdf
+invisible(dev.print(pdf, paste(config$sera_delta_AUC_dir,"/violin-plot_AUC-by-target_mouse2-6.pdf",sep="")))
+```
+
 
 ## Save barcode-level metrics
 
 In the next script, we will collapse bcs down to final mutant/variant-level phenotypes, integrate things like expression effects of variants, and visualize final phenotypes.
 
 ```{r output_data_barcode-level}
-dt[,.(library,barcode,target,variant_class,aa_substitutions,n_aa_substitutions,
-     tetra_avgcount,tetra_AUC,
-     tri_avgcount,tri_AUC,
-     SARS2mono_avgcount,SARS2mono_AUC,
-     RmYN02mono_avgcount,RmYN02mono_AUC)] %>%
+dt[,.(library,sublibrary,barcode,target,variant_class,aa_substitutions,n_aa_substitutions,
+     `mouse1-3_avgcount`,`mouse1-3_AUC`,
+     `mouse1-4_avgcount`,`mouse1-4_AUC`,
+     `mouse1-5_avgcount`,`mouse1-5_AUC`,
+     `mouse1-6_avgcount`,`mouse1-6_AUC`,
+     `mouse2-3_avgcount`,`mouse2-3_AUC`,
+     `mouse2-6_avgcount`,`mouse2-6_AUC`)] %>%
   mutate_if(is.numeric, round, digits=6) %>%
   write.csv(file=config$sera_delta_AUC_file, row.names=F)
 
