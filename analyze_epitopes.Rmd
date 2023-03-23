@@ -1,7 +1,7 @@
 ---
 title: "Analyze Epitopes"
 author: "Tyler Starr"
-date: "6/2/2022"
+date: "3/23/2023"
 output:
   github_document:
     toc: true
@@ -62,13 +62,15 @@ cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442",
 Read in tables of per-mutant sera AUC values, calculate SEM
 
 ```{r input_data}
-dt <- data.table(read.csv(config$final_variant_scores_lib40_file),stringsAsFactors=F)
+dt <- data.table(read.csv(config$final_variant_scores_dms_file),stringsAsFactors=F)
 
 #calculate SEMs
-dt[,sem_tetra_AUC := sd_tetra_AUC / sqrt(n_bc_tetra_AUC)]
-dt[,sem_tri_AUC := sd_tri_AUC / sqrt(n_bc_tri_AUC)]
-dt[,sem_SARS2mono_AUC := sd_SARS2mono_AUC / sqrt(n_bc_SARS2mono_AUC)]
-dt[,sem_RmYN02mono_AUC := sd_RmYN02mono_AUC / sqrt(n_bc_RmYN02mono_AUC)]
+dt[,sem_mouse1.3_AUC := sd_mouse1.3_AUC / sqrt(n_bc_mouse1.3_AUC)]
+dt[,sem_mouse1.4_AUC := sd_mouse1.4_AUC / sqrt(n_bc_mouse1.4_AUC)]
+dt[,sem_mouse1.5_AUC := sd_mouse1.5_AUC / sqrt(n_bc_mouse1.5_AUC)]
+dt[,sem_mouse1.6_AUC := sd_mouse1.6_AUC / sqrt(n_bc_mouse1.6_AUC)]
+dt[,sem_mouse2.3_AUC := sd_mouse2.3_AUC / sqrt(n_bc_mouse2.3_AUC)]
+dt[,sem_mouse2.6_AUC := sd_mouse2.6_AUC / sqrt(n_bc_mouse2.6_AUC)]
 
 ```
 
@@ -79,7 +81,7 @@ Calculate a summary metric indicating the average mutant effect on targeting by 
 ```{r compute_mean_per_site}
 dt_site <- copy(dt)
 
-compute_site_avg <- function(auc_vec, sem_vec, sem_cutoff=0.5){
+compute_site_avg <- function(auc_vec, sem_vec, sem_cutoff=0.4){
   index <- !is.na(sem_vec) & !is.na(auc_vec) & sem_vec <= sem_cutoff #elim missing values and values above sem cutoff
   if(sum(index) < 1){ #if no values
     return(as.numeric(NA))
@@ -89,13 +91,15 @@ compute_site_avg <- function(auc_vec, sem_vec, sem_cutoff=0.5){
   }
 }
 
-dt_site[,site_mean_tetra := compute_site_avg(auc_vec=delta_tetra_normAUC, sem_vec=sem_tetra_AUC),by=c("target","site")]
-dt_site[,site_mean_tri := compute_site_avg(auc_vec=delta_tri_normAUC, sem_vec=sem_tri_AUC),by=c("target","site")]
-dt_site[,site_mean_SARS2mono := compute_site_avg(auc_vec=delta_SARS2mono_normAUC, sem_vec=sem_SARS2mono_AUC),by=c("target","site")]
-dt_site[,site_mean_RmYN02mono := compute_site_avg(auc_vec=delta_RmYN02mono_normAUC, sem_vec=sem_RmYN02mono_AUC),by=c("target","site")]
+dt_site[,site_mean_mouse1.3 := compute_site_avg(auc_vec=delta_mouse1.3_normAUC, sem_vec=sem_mouse1.3_AUC),by=c("target","site")]
+dt_site[,site_mean_mouse1.4 := compute_site_avg(auc_vec=delta_mouse1.4_normAUC, sem_vec=sem_mouse1.4_AUC),by=c("target","site")]
+dt_site[,site_mean_mouse1.5 := compute_site_avg(auc_vec=delta_mouse1.5_normAUC, sem_vec=sem_mouse1.5_AUC),by=c("target","site")]
+dt_site[,site_mean_mouse1.6 := compute_site_avg(auc_vec=delta_mouse1.6_normAUC, sem_vec=sem_mouse1.6_AUC),by=c("target","site")]
+dt_site[,site_mean_mouse2.3 := compute_site_avg(auc_vec=delta_mouse2.3_normAUC, sem_vec=sem_mouse2.3_AUC),by=c("target","site")]
+dt_site[,site_mean_mouse2.6 := compute_site_avg(auc_vec=delta_mouse2.6_normAUC, sem_vec=sem_mouse2.6_AUC),by=c("target","site")]
 
 dt_site <- unique(dt_site[,.(target,wildtype,site,site_SARS2,
-                            site_mean_tetra,site_mean_tri,site_mean_SARS2mono,site_mean_RmYN02mono)])
+                            site_mean_mouse1.3,site_mean_mouse1.4,site_mean_mouse1.5,site_mean_mouse1.6,site_mean_mouse2.3,site_mean_mouse2.6)])
 
 
 ```
@@ -110,11 +114,11 @@ Also add gray shading for sites of escape from antibodies from our large panel o
 First, define sites of substantial antibody escape
 ```{r antibody_escape_sites}
 dt_mAb <- data.table(read.csv(file=config$WH1_mut_antibody_escape,stringsAsFactors = F))
-dt_mAb <- unique(dt_mAb[condition_type=="antibody",.(condition, condition_type, condition_subtype, site, wildtype, site_total_escape, site_mean_escape)])
+dt_mAb <- unique(dt_mAb[condition_type=="antibody",.(condition, condition_type, condition_subtype, site, wildtype, site_total_escape)])
 dt_mAb[,site_average_escape:=mean(site_total_escape,na.rm=T),by=c("site")]
-site_escape <- unique(dt_mAb[,.(wildtype, site, site_average_escape)])
+site_escape <- unique(dt_mAb[,.(site, site_average_escape)])
 #define sites for labeling as those with an average of 0.05 normalized site-wise escape across all mAbs
-sig_mAb_sites <- site_escape[site_average_escape>0.025, site]
+sig_mAb_sites <- site_escape[site_average_escape>0.1, site]
 #define some epitope classes for adding highlights
 label_df <- data.frame(xmin=sig_mAb_sites-0.5,
                        xmax=sig_mAb_sites+0.5)
@@ -124,103 +128,137 @@ Setup for lineplots
 
 ```{r lineplots_setup}
 #define colors for each bg
-group.colors <- c("SARS-CoV-2_WH1" = cbPalette[6], "RshSTT182" = cbPalette[3], "SARS-CoV-1_Urbani" = cbPalette[4], "PRD-0038"=cbPalette[8], "RmYN02"=cbPalette[2], "RsYN04"=cbPalette[7])
+group.colors <- c("SARS-CoV-2_WH1" = cbPalette[6], "SARS-CoV-2_BA2" = cbPalette[3], "SARS-CoV-1_Urbani" = cbPalette[4], "PRD-0038"=cbPalette[8])
 
 #define colors for each serum
-group.colors.sera <- c("tetra" = cbPalette[3], "tri" = cbPalette[4], "SARS2mono" = cbPalette[6], "RmYN02mono"=cbPalette[2])
+group.colors.sera <- c("mouse1.3" = cbPalette[3], "mouse1.4" = cbPalette[2], "mouse1.5" = cbPalette[5], "mouse1.6"=cbPalette[6], "mouse2.3"=cbPalette[8], "mouse2.6"=cbPalette[7])
 
 #define order for plotting of bgs
-dt_site$target <- factor(dt_site$target,levels=c("SARS-CoV-2_WH1","RshSTT182","SARS-CoV-1_Urbani","RsYN04","PRD-0038","RmYN02"))
+dt_site$target <- factor(dt_site$target,levels=c("SARS-CoV-2_WH1","SARS-CoV-2_BA2","SARS-CoV-1_Urbani","PRD-0038"))
 
 #make insertion site 372a a numeric value 372.5 and put site as a numeric value rather than character vector
 dt_site[site_SARS2=="372a",site_SARS2:="372.5"]; dt_site$site_SARS2 <- as.numeric(dt_site$site_SARS2)
 ```
 
-Tetra sera, show all targets
+mouse1.3 sera, show all targets
 
-```{r line_plots_sera_AUC_tetra, echo=T, fig.width=12, fig.height=4, fig.align="center", dpi=300,dev="png"}
-ggplot(data=dt_site, aes(x=site_SARS2, y=site_mean_tetra, color=target))+
+```{r line_plots_sera_AUC_mouse1.3, echo=T, fig.width=12, fig.height=4, fig.align="center", dpi=300,dev="png"}
+ggplot(data=dt_site, aes(x=site_SARS2, y=site_mean_mouse1.3, color=target))+
   geom_rect(data=label_df, aes(x=NULL, y=NULL, color=NULL,xmin=xmin, xmax=xmax, 
-                               ymin=1.1*min(dt_site$site_mean_tetra,na.rm=T), 
-                               ymax=1.1*max(dt_site$site_mean_tetra,na.rm=T)), alpha=0.2)+
+                               ymin=1.1*min(dt_site$site_mean_mouse1.3,na.rm=T), 
+                               ymax=1.1*max(dt_site$site_mean_mouse1.3,na.rm=T)), alpha=0.2)+
   geom_line(size=1)+
   scale_color_manual(values=group.colors)+
   theme_classic()+
   scale_x_continuous(expand=c(0.01,0.01),breaks=c(331,seq(335,530,by=5)))+
   theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10))+
-  ylab("site mean delta-AUC, tetra sera")
-invisible(dev.print(pdf, paste(config$epitopes_dir,"/lineplot_delta-AUC_tetra.pdf",sep=""),useDingbats=F))
+  ylab("site mean delta-AUC, mouse1.3 sera")
+invisible(dev.print(pdf, paste(config$epitopes_dir,"/lineplot_delta-AUC_mouse1.3.pdf",sep=""),useDingbats=F))
 ```
 
-tri sera, show all targets
+mouse1.4 sera, show all targets
 
-```{r line_plots_sera_AUC_tri, echo=T, fig.width=12, fig.height=4, fig.align="center", dpi=300,dev="png"}
-ggplot(data=dt_site, aes(x=site_SARS2, y=site_mean_tri, color=target))+
+```{r line_plots_sera_AUC_mouse1.4, echo=T, fig.width=12, fig.height=4, fig.align="center", dpi=300,dev="png"}
+ggplot(data=dt_site, aes(x=site_SARS2, y=site_mean_mouse1.4, color=target))+
   geom_rect(data=label_df, aes(x=NULL, y=NULL, color=NULL,xmin=xmin, xmax=xmax, 
-                               ymin=1.1*min(dt_site$site_mean_tri,na.rm=T), 
-                               ymax=1.1*max(dt_site$site_mean_tri,na.rm=T)), alpha=0.2)+
+                               ymin=1.1*min(dt_site$site_mean_mouse1.4,na.rm=T), 
+                               ymax=1.1*max(dt_site$site_mean_mouse1.4,na.rm=T)), alpha=0.2)+
   geom_line(size=1)+
   scale_color_manual(values=group.colors)+
   theme_classic()+
   scale_x_continuous(expand=c(0.01,0.01),breaks=c(331,seq(335,530,by=5)))+
   theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10))+
-  ylab("site mean delta-AUC, tri sera")
-invisible(dev.print(pdf, paste(config$epitopes_dir,"/lineplot_delta-AUC_tri.pdf",sep=""),useDingbats=F))
+  ylab("site mean delta-AUC, mouse1.4 sera")
+invisible(dev.print(pdf, paste(config$epitopes_dir,"/lineplot_delta-AUC_mouse1.4.pdf",sep=""),useDingbats=F))
 ```
 
-SARS2mono sera, show all targets
+mouse1.5 sera, show all targets
 
-```{r line_plots_sera_AUC_SARS2mono, echo=T, fig.width=12, fig.height=4, fig.align="center", dpi=300,dev="png"}
-ggplot(data=dt_site, aes(x=site_SARS2, y=site_mean_SARS2mono, color=target))+
+```{r line_plots_sera_AUC_mouse1.5, echo=T, fig.width=12, fig.height=4, fig.align="center", dpi=300,dev="png"}
+ggplot(data=dt_site, aes(x=site_SARS2, y=site_mean_mouse1.5, color=target))+
   geom_rect(data=label_df, aes(x=NULL, y=NULL, color=NULL,xmin=xmin, xmax=xmax, 
-                               ymin=1.1*min(dt_site$site_mean_SARS2mono,na.rm=T), 
-                               ymax=1.1*max(dt_site$site_mean_SARS2mono,na.rm=T)), alpha=0.2)+
+                               ymin=1.1*min(dt_site$site_mean_mouse1.5,na.rm=T), 
+                               ymax=1.1*max(dt_site$site_mean_mouse1.5,na.rm=T)), alpha=0.2)+
   geom_line(size=1)+
   scale_color_manual(values=group.colors)+
   theme_classic()+
   scale_x_continuous(expand=c(0.01,0.01),breaks=c(331,seq(335,530,by=5)))+
   theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10))+
-  ylab("site mean delta-AUC, SARS2mono sera")
-invisible(dev.print(pdf, paste(config$epitopes_dir,"/lineplot_delta-AUC_SARS2mono.pdf",sep=""),useDingbats=F))
+  ylab("site mean delta-AUC, mouse1.5 sera")
+invisible(dev.print(pdf, paste(config$epitopes_dir,"/lineplot_delta-AUC_mouse1.5.pdf",sep=""),useDingbats=F))
 ```
 
-RmYN02mono sera, show all targets
+mouse1.6 sera, show all targets
 
-```{r line_plots_sera_AUC_RmYN02mono, echo=T, fig.width=12, fig.height=4, fig.align="center", dpi=300,dev="png"}
-ggplot(data=dt_site, aes(x=site_SARS2, y=site_mean_RmYN02mono, color=target))+
+```{r line_plots_sera_AUC_mouse1.6, echo=T, fig.width=12, fig.height=4, fig.align="center", dpi=300,dev="png"}
+ggplot(data=dt_site, aes(x=site_SARS2, y=site_mean_mouse1.6, color=target))+
   geom_rect(data=label_df, aes(x=NULL, y=NULL, color=NULL,xmin=xmin, xmax=xmax, 
-                               ymin=1.1*min(dt_site$site_mean_RmYN02mono,na.rm=T), 
-                               ymax=1.1*max(dt_site$site_mean_RmYN02mono,na.rm=T)), alpha=0.2)+
+                               ymin=1.1*min(dt_site$site_mean_mouse1.6,na.rm=T), 
+                               ymax=1.1*max(dt_site$site_mean_mouse1.6,na.rm=T)), alpha=0.2)+
   geom_line(size=1)+
   scale_color_manual(values=group.colors)+
   theme_classic()+
   scale_x_continuous(expand=c(0.01,0.01),breaks=c(331,seq(335,530,by=5)))+
   theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10))+
-  ylab("site mean delta-AUC, RmYN02mono sera")
-invisible(dev.print(pdf, paste(config$epitopes_dir,"/lineplot_delta-AUC_RmYN02mono.pdf",sep=""),useDingbats=F))
+  ylab("site mean delta-AUC, mouse1.6 sera")
+invisible(dev.print(pdf, paste(config$epitopes_dir,"/lineplot_delta-AUC_mouse1.6.pdf",sep=""),useDingbats=F))
 ```
 
-Also do lineplots by target comparing the four sera. First, setup alternate temp data table
+mouse2.3 sera, show all targets
+
+```{r line_plots_sera_AUC_mouse2.3, echo=T, fig.width=12, fig.height=4, fig.align="center", dpi=300,dev="png"}
+ggplot(data=dt_site, aes(x=site_SARS2, y=site_mean_mouse2.3, color=target))+
+  geom_rect(data=label_df, aes(x=NULL, y=NULL, color=NULL,xmin=xmin, xmax=xmax, 
+                               ymin=1.1*min(dt_site$site_mean_mouse2.3,na.rm=T), 
+                               ymax=1.1*max(dt_site$site_mean_mouse2.3,na.rm=T)), alpha=0.2)+
+  geom_line(size=1)+
+  scale_color_manual(values=group.colors)+
+  theme_classic()+
+  scale_x_continuous(expand=c(0.01,0.01),breaks=c(331,seq(335,530,by=5)))+
+  theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10))+
+  ylab("site mean delta-AUC, mouse2.3 sera")
+invisible(dev.print(pdf, paste(config$epitopes_dir,"/lineplot_delta-AUC_mouse2.3.pdf",sep=""),useDingbats=F))
+```
+
+mouse2.6 sera, show all targets
+
+```{r line_plots_sera_AUC_mouse2.6, echo=T, fig.width=12, fig.height=4, fig.align="center", dpi=300,dev="png"}
+ggplot(data=dt_site, aes(x=site_SARS2, y=site_mean_mouse2.6, color=target))+
+  geom_rect(data=label_df, aes(x=NULL, y=NULL, color=NULL,xmin=xmin, xmax=xmax, 
+                               ymin=1.1*min(dt_site$site_mean_mouse2.6,na.rm=T), 
+                               ymax=1.1*max(dt_site$site_mean_mouse2.6,na.rm=T)), alpha=0.2)+
+  geom_line(size=1)+
+  scale_color_manual(values=group.colors)+
+  theme_classic()+
+  scale_x_continuous(expand=c(0.01,0.01),breaks=c(331,seq(335,530,by=5)))+
+  theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10))+
+  ylab("site mean delta-AUC, mouse2.6 sera")
+invisible(dev.print(pdf, paste(config$epitopes_dir,"/lineplot_delta-AUC_mouse2.6.pdf",sep=""),useDingbats=F))
+```
+
+Also do lineplots by target comparing the six sera. First, setup alternate temp data table
 
 ```{r lineplots_setup_by_target}
 #define colors for each serum
-group.colors.sera <- c("tetra" = cbPalette[3], "tri" = cbPalette[4], "SARS2mono" = cbPalette[6], "RmYN02mono"=cbPalette[2])
+group.colors.sera <- c("mouse1.3" = cbPalette[3], "mouse1.4" = cbPalette[2], "mouse1.5" = cbPalette[5], "mouse1.6"=cbPalette[6], "mouse2.3"=cbPalette[8], "mouse2.6"=cbPalette[7])
 
 #melt to long
 temp <- data.table::melt(dt_site[, .(target,site,site_SARS2,
-                                     site_mean_tetra, site_mean_tri,site_mean_SARS2mono,site_mean_RmYN02mono)],
+                                     site_mean_mouse1.3, site_mean_mouse1.4,site_mean_mouse1.5,site_mean_mouse1.6,site_mean_mouse2.3,site_mean_mouse2.6)],
                          id.vars=c("target","site","site_SARS2"),
-                         measure.vars=c("site_mean_tetra","site_mean_tri","site_mean_SARS2mono","site_mean_RmYN02mono"),
+                         measure.vars=c("site_mean_mouse1.3","site_mean_mouse1.4","site_mean_mouse1.5","site_mean_mouse1.6","site_mean_mouse2.3","site_mean_mouse2.6"),
                          variable.name="measurement",value.name="value")
 
 #rename
-temp[measurement=="site_mean_tetra",measurement:="tetra"]
-temp[measurement=="site_mean_tri",measurement:="tri"]
-temp[measurement=="site_mean_SARS2mono",measurement:="SARS2mono"]
-temp[measurement=="site_mean_RmYN02mono",measurement:="RmYN02mono"]
+temp[measurement=="site_mean_mouse1.3",measurement:="mouse1.3"]
+temp[measurement=="site_mean_mouse1.4",measurement:="mouse1.4"]
+temp[measurement=="site_mean_mouse1.5",measurement:="mouse1.5"]
+temp[measurement=="site_mean_mouse1.6",measurement:="mouse1.6"]
+temp[measurement=="site_mean_mouse2.3",measurement:="mouse2.3"]
+temp[measurement=="site_mean_mouse2.6",measurement:="mouse2.6"]
 
 #define order for plotting of bgs
-dt_site$measurement <- factor(dt_site$measurement,levels=c("tetra","tri","SARS2mono","RmYN02mono"))
+temp$measurement <- factor(temp$measurement,levels=c("mouse1.3","mouse1.6","mouse1.4","mouse1.5","mouse2.3","mouse2.6"))
 
 ```
 
@@ -239,11 +277,10 @@ ggplot(data=temp[target=="SARS-CoV-2_WH1"], aes(x=site_SARS2, y=value, color=mea
   ylab("site mean delta-AUC, SARS-CoV-2_WH1 target")
 invisible(dev.print(pdf, paste(config$epitopes_dir,"/lineplot_delta-AUC_SARS-CoV-2_WH1.pdf",sep=""),useDingbats=F))
 ```
+Lineplots for SARS_CoV-2_BA2
 
-Lineplots for RshSTT182
-
-```{r line_plots_sera_AUC_RshSTT182, echo=T, fig.width=12, fig.height=4, fig.align="center", dpi=300,dev="png"}
-ggplot(data=temp[target=="RshSTT182"], aes(x=site_SARS2, y=value, color=measurement))+
+```{r line_plots_sera_AUC_SARS-CoV-2_BA2, echo=T, fig.width=12, fig.height=4, fig.align="center", dpi=300,dev="png"}
+ggplot(data=temp[target=="SARS-CoV-2_BA2"], aes(x=site_SARS2, y=value, color=measurement))+
   geom_rect(data=label_df, aes(x=NULL, y=NULL, color=NULL,xmin=xmin, xmax=xmax, 
                                ymin=1.1*min(dt_site$value,na.rm=T), 
                                ymax=1.1*max(dt_site$value,na.rm=T)), alpha=0.2)+
@@ -252,9 +289,10 @@ ggplot(data=temp[target=="RshSTT182"], aes(x=site_SARS2, y=value, color=measurem
   theme_classic()+
   scale_x_continuous(expand=c(0.01,0.01),breaks=c(331,seq(335,530,by=5)))+
   theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10))+
-  ylab("site mean delta-AUC, RshSTT182 target")
-invisible(dev.print(pdf, paste(config$epitopes_dir,"/lineplot_delta-AUC_RshSTT182.pdf",sep=""),useDingbats=F))
+  ylab("site mean delta-AUC, SARS-CoV-2_BA2 target")
+invisible(dev.print(pdf, paste(config$epitopes_dir,"/lineplot_delta-AUC_SARS-CoV-2_BA2.pdf",sep=""),useDingbats=F))
 ```
+
 Lineplots for SARS-CoV-1_Urbani
 
 ```{r line_plots_sera_AUC_SARS-CoV-1_Urbani, echo=T, fig.width=12, fig.height=4, fig.align="center", dpi=300,dev="png"}
@@ -287,38 +325,6 @@ ggplot(data=temp[target=="PRD-0038"], aes(x=site_SARS2, y=value, color=measureme
 invisible(dev.print(pdf, paste(config$epitopes_dir,"/lineplot_delta-AUC_PRD-0038.pdf",sep=""),useDingbats=F))
 ```
 
-Lineplots for RsYN04
-
-```{r line_plots_sera_AUC_RsYN04, echo=T, fig.width=12, fig.height=4, fig.align="center", dpi=300,dev="png"}
-ggplot(data=temp[target=="RsYN04"], aes(x=site_SARS2, y=value, color=measurement))+
-  geom_rect(data=label_df, aes(x=NULL, y=NULL, color=NULL,xmin=xmin, xmax=xmax, 
-                               ymin=1.1*min(dt_site$value,na.rm=T), 
-                               ymax=1.1*max(dt_site$value,na.rm=T)), alpha=0.2)+
-  geom_line(size=1)+
-  scale_color_manual(values=group.colors.sera)+
-  theme_classic()+
-  scale_x_continuous(expand=c(0.01,0.01),breaks=c(331,seq(335,530,by=5)))+
-  theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10))+
-  ylab("site mean delta-AUC, RsYN04 target")
-invisible(dev.print(pdf, paste(config$epitopes_dir,"/lineplot_delta-AUC_RsYN04.pdf",sep=""),useDingbats=F))
-```
-
-Lineplots for RmYN02
-
-```{r line_plots_sera_AUC_RmYN02, echo=T, fig.width=12, fig.height=4, fig.align="center", dpi=300,dev="png"}
-ggplot(data=temp[target=="RmYN02"], aes(x=site_SARS2, y=value, color=measurement))+
-  geom_rect(data=label_df, aes(x=NULL, y=NULL, color=NULL,xmin=xmin, xmax=xmax, 
-                               ymin=1.1*min(dt_site$value,na.rm=T), 
-                               ymax=1.1*max(dt_site$value,na.rm=T)), alpha=0.2)+
-  geom_line(size=1)+
-  scale_color_manual(values=group.colors.sera)+
-  theme_classic()+
-  scale_x_continuous(expand=c(0.01,0.01),breaks=c(331,seq(335,530,by=5)))+
-  theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10))+
-  ylab("site mean delta-AUC, RmYN02 target")
-invisible(dev.print(pdf, paste(config$epitopes_dir,"/lineplot_delta-AUC_RmYN02.pdf",sep=""),useDingbats=F))
-```
-
 ## Map to RBD structure
 
 To visualize epitope surfaces, map site-mean AUC to pdbs for visualization in PyMol.
@@ -326,8 +332,8 @@ To visualize epitope surfaces, map site-mean AUC to pdbs for visualization in Py
 ```{r map_to_structure}
 pdb_wh1 <- read.pdb(file=config$pdb_6m0j)
 #iterate through backgrounds and metrics, output a pdb mapping the mean serum AUC to structure
-for(bg in c("SARS-CoV-2_WH1","RshSTT182","SARS-CoV-1_Urbani","PRD-0038","RmYN02","RsYN04")){
-  for(serum in c("tetra","tri","SARS2mono","RmYN02mono")){
+for(bg in c("SARS-CoV-2_WH1","SARS-CoV-2_BA2","SARS-CoV-1_Urbani","PRD-0038")){
+  for(serum in c("mouse1.3","mouse1.4","mouse1.5","mouse1.6","mouse2.3","mouse2.6")){
     b <- rep(0, length(pdb_wh1$atom$b))
     for(i in 1:nrow(pdb_wh1$atom)){
       if(pdb_wh1$atom$chain[i]=="E"){
@@ -344,5 +350,5 @@ for(bg in c("SARS-CoV-2_WH1","RshSTT182","SARS-CoV-1_Urbani","PRD-0038","RmYN02"
 ```
 
 
-```
+
 

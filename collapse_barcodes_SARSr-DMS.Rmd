@@ -1,7 +1,7 @@
 ---
 title: "Collapse barcodes to final per-RBD/mutant phenotype scores"
 author: "Tyler Starr"
-date: "05/14/2022"
+date: "03/22/2023"
 output:
   github_document:
     toc: true
@@ -47,13 +47,29 @@ sessionInfo()
 Read in tables of per-barcode sera AUC values, as well as the prior SARSr DMS data with expression effects of mutations.
 
 ```{r input_data}
-dt <- data.table(read.csv(config$sera_delta_AUC_file),stringsAsFactors=F)[library=="lib40_SARSr-DMS",]
+dt <- data.table(read.csv(config$sera_delta_AUC_file),stringsAsFactors=F)[sublibrary!="lib47_SARSr-wts",]
 
-dt_expr <- data.table(read.csv(config$SARSr_lib40_mut_bind_expr),stringsAsFactors=F)[,.(target,wildtype,site,site_SARS2,mutant,mutation,mutation_SARS2,expr,delta_expr,n_bc_expr,expr_rep1,expr_rep2)]
+dt_expr1 <- data.table(read.csv(config$SARSr_lib40_mut_bind_expr),stringsAsFactors=F)[,.(target,wildtype,site,site_SARS2,mutant,mutation,mutation_SARS2,expression,expression_delta,n_bc_expression)]
+
+dt_expr2 <- data.table(read.csv(config$SARS2_WH1_BA2_mut_bind_expr),stringsAsFactors=F)[,.(target,wildtype,position,mutant,mutation,expr,delta_expr,n_bc_expr)]
+  
+#rename columns to merge
+dt_expr2[,site:=position]
+dt_expr2[,site_SARS2:=position]
+dt_expr2[,mutation_SARS2:=mutation]
+
+dt_expr1[,expr:=expression]
+dt_expr1[,delta_expr:=expression_delta]
+dt_expr1[,n_bc_expr:=n_bc_expression]
+
+#merge, using the Omi-associated WH1 expr measurements
+dt_expr <- rbind(dt_expr1[target %in% c("PRD-0038","SARS-CoV-1_Urbani"),.(target,wildtype,site,site_SARS2,mutant,mutation,mutation_SARS2,expr,delta_expr,n_bc_expr)],
+                 dt_expr2[target %in% c("Wuhan-Hu-1_v2","Omicron_BA2"),.(target,wildtype,site,site_SARS2,mutant,mutation,mutation_SARS2,expr,delta_expr,n_bc_expr)])
+rm(dt_expr1);rm(dt_expr2)
+
 #rename targets to match this repo
-dt_expr[target=="PRD0038",target:="PRD-0038"]
-dt_expr[target=="SARS-CoV-1",target:="SARS-CoV-1_Urbani"]
-dt_expr[target=="SARS-CoV-2",target:="Wuhan_Hu_1"]
+dt_expr[target=="Wuhan-Hu-1_v2",target:="SARS-CoV-2_WH1"]
+dt_expr[target=="Omicron_BA2",target:="SARS-CoV-2_BA2"]
 ```
 
 ## Calculate per-variant mean scores
@@ -61,67 +77,93 @@ dt_expr[target=="SARS-CoV-2",target:="Wuhan_Hu_1"]
 Calculate the mean binding score collapsed by genotype. Also output the number of barcodes across which a variant score was determined in each library.
 
 ```{r calculate_mean_scores}
-dt[,mean_tetra_AUC:=mean(tetra_AUC,na.rm=T),by=c("library","target","aa_substitutions")]
-dt[,sd_tetra_AUC:=sd(tetra_AUC,na.rm=T),by=c("library","target","aa_substitutions")]
-dt[,n_bc_tetra_AUC:=sum(!is.na(tetra_AUC)),by=c("library","target","aa_substitutions")]
+dt[,mean_mouse1.3_AUC:=mean(mouse1.3_AUC,na.rm=T),by=c("library","target","aa_substitutions")]
+dt[,sd_mouse1.3_AUC:=sd(mouse1.3_AUC,na.rm=T),by=c("library","target","aa_substitutions")]
+dt[,n_bc_mouse1.3_AUC:=sum(!is.na(mouse1.3_AUC)),by=c("library","target","aa_substitutions")]
 
-dt[,mean_tri_AUC:=mean(tri_AUC,na.rm=T),by=c("library","target","aa_substitutions")]
-dt[,sd_tri_AUC:=sd(tri_AUC,na.rm=T),by=c("library","target","aa_substitutions")]
-dt[,n_bc_tri_AUC:=sum(!is.na(tri_AUC)),by=c("library","target","aa_substitutions")]
+dt[,mean_mouse1.4_AUC:=mean(mouse1.4_AUC,na.rm=T),by=c("library","target","aa_substitutions")]
+dt[,sd_mouse1.4_AUC:=sd(mouse1.4_AUC,na.rm=T),by=c("library","target","aa_substitutions")]
+dt[,n_bc_mouse1.4_AUC:=sum(!is.na(mouse1.4_AUC)),by=c("library","target","aa_substitutions")]
 
-dt[,mean_SARS2mono_AUC:=mean(SARS2mono_AUC,na.rm=T),by=c("library","target","aa_substitutions")]
-dt[,sd_SARS2mono_AUC:=sd(SARS2mono_AUC,na.rm=T),by=c("library","target","aa_substitutions")]
-dt[,n_bc_SARS2mono_AUC:=sum(!is.na(SARS2mono_AUC)),by=c("library","target","aa_substitutions")]
+dt[,mean_mouse1.5_AUC:=mean(mouse1.5_AUC,na.rm=T),by=c("library","target","aa_substitutions")]
+dt[,sd_mouse1.5_AUC:=sd(mouse1.5_AUC,na.rm=T),by=c("library","target","aa_substitutions")]
+dt[,n_bc_mouse1.5_AUC:=sum(!is.na(mouse1.5_AUC)),by=c("library","target","aa_substitutions")]
 
-dt[,mean_RmYN02mono_AUC:=mean(RmYN02mono_AUC,na.rm=T),by=c("library","target","aa_substitutions")]
-dt[,sd_RmYN02mono_AUC:=sd(RmYN02mono_AUC,na.rm=T),by=c("library","target","aa_substitutions")]
-dt[,n_bc_RmYN02mono_AUC:=sum(!is.na(RmYN02mono_AUC)),by=c("library","target","aa_substitutions")]
+dt[,mean_mouse1.6_AUC:=mean(mouse1.6_AUC,na.rm=T),by=c("library","target","aa_substitutions")]
+dt[,sd_mouse1.6_AUC:=sd(mouse1.6_AUC,na.rm=T),by=c("library","target","aa_substitutions")]
+dt[,n_bc_mouse1.6_AUC:=sum(!is.na(mouse1.6_AUC)),by=c("library","target","aa_substitutions")]
+
+dt[,mean_mouse2.3_AUC:=mean(mouse2.3_AUC,na.rm=T),by=c("library","target","aa_substitutions")]
+dt[,sd_mouse2.3_AUC:=sd(mouse2.3_AUC,na.rm=T),by=c("library","target","aa_substitutions")]
+dt[,n_bc_mouse2.3_AUC:=sum(!is.na(mouse2.3_AUC)),by=c("library","target","aa_substitutions")]
+
+dt[,mean_mouse2.6_AUC:=mean(mouse2.6_AUC,na.rm=T),by=c("library","target","aa_substitutions")]
+dt[,sd_mouse2.6_AUC:=sd(mouse2.6_AUC,na.rm=T),by=c("library","target","aa_substitutions")]
+dt[,n_bc_mouse2.6_AUC:=sum(!is.na(mouse2.6_AUC)),by=c("library","target","aa_substitutions")]
+
 
 dt <- unique(dt[,.(library,target,variant_class,aa_substitutions,n_aa_substitutions,
-                   mean_tetra_AUC, sd_tetra_AUC, n_bc_tetra_AUC,
-                  mean_tri_AUC, sd_tri_AUC, n_bc_tri_AUC,
-                  mean_SARS2mono_AUC, sd_SARS2mono_AUC, n_bc_SARS2mono_AUC,
-                  mean_RmYN02mono_AUC, sd_RmYN02mono_AUC, n_bc_RmYN02mono_AUC)])
+                   mean_mouse1.3_AUC, sd_mouse1.3_AUC, n_bc_mouse1.3_AUC,
+                  mean_mouse1.4_AUC, sd_mouse1.4_AUC, n_bc_mouse1.4_AUC,
+                  mean_mouse1.5_AUC, sd_mouse1.5_AUC, n_bc_mouse1.5_AUC,
+                  mean_mouse1.6_AUC, sd_mouse1.6_AUC, n_bc_mouse1.6_AUC,
+                  mean_mouse2.3_AUC, sd_mouse2.3_AUC, n_bc_mouse2.3_AUC,
+                  mean_mouse2.6_AUC, sd_mouse2.6_AUC, n_bc_mouse2.6_AUC)])
 ```
 
 Some QC plots. First, look at distribution of number barcodes for single mutant detemrinations. These are 'left-justified' histograms, so the leftmost bar represents the number of genotypes for which no barcodes were collapsed to final measurement in a pool.
 
-```{r hist_n_bc_per_mutant, fig.width=8, fig.height=6, fig.align="center", dpi=300,dev="png"}
-par(mfrow=c(2,2))
-hist(dt[variant_class=="1 nonsynonymous",n_bc_tetra_AUC],main="tetra sera",right=F,breaks=max(dt[variant_class=="1 nonsynonymous",n_bc_tetra_AUC],na.rm=T),xlab="")
-hist(dt[variant_class=="1 nonsynonymous",n_bc_tri_AUC],main="tri sera",right=F,breaks=max(dt[variant_class=="1 nonsynonymous",n_bc_tri_AUC],na.rm=T),xlab="")
-hist(dt[variant_class=="1 nonsynonymous",n_bc_SARS2mono_AUC],main="SARS2mono sera",right=F,breaks=max(dt[variant_class=="1 nonsynonymous",n_bc_SARS2mono_AUC],na.rm=T),xlab="")
-hist(dt[variant_class=="1 nonsynonymous",n_bc_RmYN02mono_AUC],main="RmYN02mono sera",right=F,breaks=max(dt[variant_class=="1 nonsynonymous",n_bc_RmYN02mono_AUC],na.rm=T),xlab="")
+```{r hist_n_bc_per_mutant, fig.width=8, fig.height=9, fig.align="center", dpi=300,dev="png"}
+par(mfrow=c(3,2))
+hist(dt[variant_class=="1 nonsynonymous",n_bc_mouse1.3_AUC],main="mouse1.3 sera",right=F,breaks=max(dt[variant_class=="1 nonsynonymous",n_bc_mouse1.3_AUC],na.rm=T),xlab="")
+hist(dt[variant_class=="1 nonsynonymous",n_bc_mouse1.4_AUC],main="mouse1.4 sera",right=F,breaks=max(dt[variant_class=="1 nonsynonymous",n_bc_mouse1.4_AUC],na.rm=T),xlab="")
+hist(dt[variant_class=="1 nonsynonymous",n_bc_mouse1.5_AUC],main="mouse1.5 sera",right=F,breaks=max(dt[variant_class=="1 nonsynonymous",n_bc_mouse1.5_AUC],na.rm=T),xlab="")
+hist(dt[variant_class=="1 nonsynonymous",n_bc_mouse1.6_AUC],main="mouse1.6 sera",right=F,breaks=max(dt[variant_class=="1 nonsynonymous",n_bc_mouse1.6_AUC],na.rm=T),xlab="")
+hist(dt[variant_class=="1 nonsynonymous",n_bc_mouse2.3_AUC],main="mouse2.3 sera",right=F,breaks=max(dt[variant_class=="1 nonsynonymous",n_bc_mouse2.3_AUC],na.rm=T),xlab="")
+hist(dt[variant_class=="1 nonsynonymous",n_bc_mouse2.6_AUC],main="mouse2.6 sera",right=F,breaks=max(dt[variant_class=="1 nonsynonymous",n_bc_mouse2.6_AUC],na.rm=T),xlab="")
 
 ```
 
 What about how SEM tracks with number of barcodes collapsed? This could help for choosing a minimum number of barcodes to use or an SEM cutoff. List fraction above SEM 0.5 on each plot.
 
-```{r sem_v_n-bc, fig.width=8, fig.height=8, fig.align="center", dpi=300,dev="png"}
-par(mfrow=c(2,2))
-plot(dt[variant_class=="1 nonsynonymous",n_bc_tetra_AUC],
-     dt[variant_class=="1 nonsynonymous",sd_tetra_AUC/sqrt(n_bc_tetra_AUC)],
-     pch=16,col="#00000005",main="tetra sera",ylab="SEM",xlab="number barcodes collapsed")
+```{r sem_v_n-bc, fig.width=8, fig.height=12, fig.align="center", dpi=300,dev="png"}
+par(mfrow=c(3,2))
+plot(dt[variant_class=="1 nonsynonymous",n_bc_mouse1.3_AUC],
+     dt[variant_class=="1 nonsynonymous",sd_mouse1.3_AUC/sqrt(n_bc_mouse1.3_AUC)],
+     pch=16,col="#00000005",main="mouse1.3 sera",ylab="SEM",xlab="number barcodes collapsed")
 abline(h=0.5,col="red",lty=2)
-legend("topleft",bty="n",cex=1,legend=paste(format(100*nrow(dt[variant_class=="1 nonsynonymous" & sd_tetra_AUC/sqrt(n_bc_tetra_AUC) > 0.5 & !is.na(mean_tetra_AUC),])/nrow(dt[variant_class=="1 nonsynonymous" & !is.na(mean_tetra_AUC),]),digits=3),"%"))
+legend("topleft",bty="n",cex=1,legend=paste(format(100*nrow(dt[variant_class=="1 nonsynonymous" & sd_mouse1.3_AUC/sqrt(n_bc_mouse1.3_AUC) > 0.5 & !is.na(mean_mouse1.3_AUC),])/nrow(dt[variant_class=="1 nonsynonymous" & !is.na(mean_mouse1.3_AUC),]),digits=3),"%"))
 
-plot(dt[variant_class=="1 nonsynonymous",n_bc_tri_AUC],
-     dt[variant_class=="1 nonsynonymous",sd_tri_AUC/sqrt(n_bc_tri_AUC)],
-     pch=16,col="#00000005",main="tri sera",ylab="SEM",xlab="number barcodes collapsed")
+plot(dt[variant_class=="1 nonsynonymous",n_bc_mouse1.4_AUC],
+     dt[variant_class=="1 nonsynonymous",sd_mouse1.4_AUC/sqrt(n_bc_mouse1.4_AUC)],
+     pch=16,col="#00000005",main="mouse1.4 sera",ylab="SEM",xlab="number barcodes collapsed")
 abline(h=0.5,col="red",lty=2)
-legend("topleft",bty="n",cex=1,legend=paste(format(100*nrow(dt[variant_class=="1 nonsynonymous" & sd_tri_AUC/sqrt(n_bc_tri_AUC) > 0.5 & !is.na(mean_tri_AUC),])/nrow(dt[variant_class=="1 nonsynonymous" & !is.na(mean_tri_AUC),]),digits=3),"%"))
+legend("topleft",bty="n",cex=1,legend=paste(format(100*nrow(dt[variant_class=="1 nonsynonymous" & sd_mouse1.4_AUC/sqrt(n_bc_mouse1.4_AUC) > 0.5 & !is.na(mean_mouse1.4_AUC),])/nrow(dt[variant_class=="1 nonsynonymous" & !is.na(mean_mouse1.4_AUC),]),digits=3),"%"))
 
-plot(dt[variant_class=="1 nonsynonymous",n_bc_SARS2mono_AUC],
-     dt[variant_class=="1 nonsynonymous",sd_SARS2mono_AUC/sqrt(n_bc_SARS2mono_AUC)],
-     pch=16,col="#00000005",main="SARS2mono sera",ylab="SEM",xlab="number barcodes collapsed")
+plot(dt[variant_class=="1 nonsynonymous",n_bc_mouse1.5_AUC],
+     dt[variant_class=="1 nonsynonymous",sd_mouse1.5_AUC/sqrt(n_bc_mouse1.5_AUC)],
+     pch=16,col="#00000005",main="mouse1.5 sera",ylab="SEM",xlab="number barcodes collapsed")
 abline(h=0.5,col="red",lty=2)
-legend("topleft",bty="n",cex=1,legend=paste(format(100*nrow(dt[variant_class=="1 nonsynonymous" & sd_SARS2mono_AUC/sqrt(n_bc_SARS2mono_AUC) > 0.5 & !is.na(mean_SARS2mono_AUC),])/nrow(dt[variant_class=="1 nonsynonymous" & !is.na(mean_SARS2mono_AUC),]),digits=3),"%"))
+legend("topleft",bty="n",cex=1,legend=paste(format(100*nrow(dt[variant_class=="1 nonsynonymous" & sd_mouse1.5_AUC/sqrt(n_bc_mouse1.5_AUC) > 0.5 & !is.na(mean_mouse1.5_AUC),])/nrow(dt[variant_class=="1 nonsynonymous" & !is.na(mean_mouse1.5_AUC),]),digits=3),"%"))
 
-plot(dt[variant_class=="1 nonsynonymous",n_bc_RmYN02mono_AUC],
-     dt[variant_class=="1 nonsynonymous",sd_RmYN02mono_AUC/sqrt(n_bc_RmYN02mono_AUC)],
-     pch=16,col="#00000005",main="RmYN02mono sera",ylab="SEM",xlab="number barcodes collapsed")
+plot(dt[variant_class=="1 nonsynonymous",n_bc_mouse1.6_AUC],
+     dt[variant_class=="1 nonsynonymous",sd_mouse1.6_AUC/sqrt(n_bc_mouse1.6_AUC)],
+     pch=16,col="#00000005",main="mouse1.6 sera",ylab="SEM",xlab="number barcodes collapsed")
 abline(h=0.5,col="red",lty=2)
-legend("topleft",bty="n",cex=1,legend=paste(format(100*nrow(dt[variant_class=="1 nonsynonymous" & sd_RmYN02mono_AUC/sqrt(n_bc_RmYN02mono_AUC) > 0.5 & !is.na(mean_RmYN02mono_AUC),])/nrow(dt[variant_class=="1 nonsynonymous" & !is.na(mean_RmYN02mono_AUC),]),digits=3),"%"))
+legend("topleft",bty="n",cex=1,legend=paste(format(100*nrow(dt[variant_class=="1 nonsynonymous" & sd_mouse1.6_AUC/sqrt(n_bc_mouse1.6_AUC) > 0.5 & !is.na(mean_mouse1.6_AUC),])/nrow(dt[variant_class=="1 nonsynonymous" & !is.na(mean_mouse1.6_AUC),]),digits=3),"%"))
+
+plot(dt[variant_class=="1 nonsynonymous",n_bc_mouse2.3_AUC],
+     dt[variant_class=="1 nonsynonymous",sd_mouse2.3_AUC/sqrt(n_bc_mouse2.3_AUC)],
+     pch=16,col="#00000005",main="mouse2.3 sera",ylab="SEM",xlab="number barcodes collapsed")
+abline(h=0.5,col="red",lty=2)
+legend("topleft",bty="n",cex=1,legend=paste(format(100*nrow(dt[variant_class=="1 nonsynonymous" & sd_mouse2.3_AUC/sqrt(n_bc_mouse2.3_AUC) > 0.5 & !is.na(mean_mouse2.3_AUC),])/nrow(dt[variant_class=="1 nonsynonymous" & !is.na(mean_mouse2.3_AUC),]),digits=3),"%"))
+
+plot(dt[variant_class=="1 nonsynonymous",n_bc_mouse2.6_AUC],
+     dt[variant_class=="1 nonsynonymous",sd_mouse2.6_AUC/sqrt(n_bc_mouse2.6_AUC)],
+     pch=16,col="#00000005",main="mouse2.6 sera",ylab="SEM",xlab="number barcodes collapsed")
+abline(h=0.5,col="red",lty=2)
+legend("topleft",bty="n",cex=1,legend=paste(format(100*nrow(dt[variant_class=="1 nonsynonymous" & sd_mouse2.6_AUC/sqrt(n_bc_mouse2.6_AUC) > 0.5 & !is.na(mean_mouse2.6_AUC),])/nrow(dt[variant_class=="1 nonsynonymous" & !is.na(mean_mouse2.6_AUC),]),digits=3),"%"))
+
 
 invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_sem_v_n-bc.pdf",sep=""),useDingbats=F))
 ```
@@ -140,10 +182,12 @@ split_mut <- function(x){
 dt_mutant[,c("wildtype","position","mutant"):=split_mut(as.character(aa_substitutions)),by=aa_substitutions]
 
 dt_mutant <- dt_mutant[,.(library,target,wildtype,position,mutant,
-                          mean_tetra_AUC,sd_tetra_AUC,n_bc_tetra_AUC,
-                          mean_tri_AUC,sd_tri_AUC,n_bc_tri_AUC,
-                          mean_SARS2mono_AUC,sd_SARS2mono_AUC,n_bc_SARS2mono_AUC,
-                          mean_RmYN02mono_AUC,sd_RmYN02mono_AUC,n_bc_RmYN02mono_AUC)]
+                          mean_mouse1.3_AUC,sd_mouse1.3_AUC,n_bc_mouse1.3_AUC,
+                          mean_mouse1.4_AUC,sd_mouse1.4_AUC,n_bc_mouse1.4_AUC,
+                          mean_mouse1.5_AUC,sd_mouse1.5_AUC,n_bc_mouse1.5_AUC,
+                          mean_mouse1.6_AUC,sd_mouse1.6_AUC,n_bc_mouse1.6_AUC,
+                          mean_mouse2.3_AUC,sd_mouse2.3_AUC,n_bc_mouse2.3_AUC,
+                          mean_mouse2.6_AUC,sd_mouse2.6_AUC,n_bc_mouse2.6_AUC)]
 
 aas <- c("A","C","D","E","F","G","H","I","K","L","M","N","P","Q","R","S","T","V","W","Y")
 #fill out missing values in table with a hideous loop, so the table is complete for all mutaitons (including those that are missing). If you are somebody who is reading this code, I apologize.
@@ -164,29 +208,37 @@ setkey(dt_mutant,library,target,position,mutant)
 for(lib in as.character(unique(dt_mutant$lib))){
   for(bg in as.character(unique(dt_mutant$target))){
     dt_mutant[library==lib & target==bg & wildtype==mutant, 
-              c("mean_tetra_AUC","sd_tetra_AUC","n_bc_tetra_AUC",
-                "mean_tri_AUC","sd_tri_AUC","n_bc_tri_AUC",
-                "mean_SARS2mono_AUC","sd_SARS2mono_AUC","n_bc_SARS2mono_AUC",
-                "mean_RmYN02mono_AUC","sd_RmYN02mono_AUC","n_bc_RmYN02mono_AUC") := 
+              c("mean_mouse1.3_AUC","sd_mouse1.3_AUC","n_bc_mouse1.3_AUC",
+                "mean_mouse1.4_AUC","sd_mouse1.4_AUC","n_bc_mouse1.4_AUC",
+                "mean_mouse1.5_AUC","sd_mouse1.5_AUC","n_bc_mouse1.5_AUC",
+                "mean_mouse1.6_AUC","sd_mouse1.6_AUC","n_bc_mouse1.6_AUC",
+                "mean_mouse2.3_AUC","sd_mouse2.3_AUC","n_bc_mouse2.3_AUC",
+                "mean_mouse2.6_AUC","sd_mouse2.6_AUC","n_bc_mouse2.6_AUC") := 
                 dt[library==lib & target==bg & variant_class=="wildtype",
-                   .(mean_tetra_AUC,sd_tetra_AUC,n_bc_tetra_AUC,
-                     mean_tri_AUC,sd_tri_AUC,n_bc_tri_AUC,
-                     mean_SARS2mono_AUC,sd_SARS2mono_AUC,n_bc_SARS2mono_AUC,
-                     mean_RmYN02mono_AUC,sd_RmYN02mono_AUC,n_bc_RmYN02mono_AUC)]]
+                   .(mean_mouse1.3_AUC,sd_mouse1.3_AUC,n_bc_mouse1.3_AUC,
+                     mean_mouse1.4_AUC,sd_mouse1.4_AUC,n_bc_mouse1.4_AUC,
+                     mean_mouse1.5_AUC,sd_mouse1.5_AUC,n_bc_mouse1.5_AUC,
+                     mean_mouse1.6_AUC,sd_mouse1.6_AUC,n_bc_mouse1.6_AUC,
+                     mean_mouse2.3_AUC,sd_mouse2.3_AUC,n_bc_mouse2.3_AUC,
+                     mean_mouse2.6_AUC,sd_mouse2.6_AUC,n_bc_mouse2.6_AUC)]]
   }
 }
 
 #add delta bind measures relative to respective wildtypes
 for(lib in as.character(unique(dt_mutant$lib))){
   for(bg in as.character(unique(dt_mutant$target))){
-    ref_tetra_AUC <- dt[library==lib & target==bg & variant_class=="wildtype",mean_tetra_AUC]
-    dt_mutant[library==lib & target==bg,delta_tetra_AUC := mean_tetra_AUC - ref_tetra_AUC]
-    ref_tri_AUC <- dt[library==lib & target==bg & variant_class=="wildtype",mean_tri_AUC]
-    dt_mutant[library==lib & target==bg,delta_tri_AUC := mean_tri_AUC - ref_tri_AUC]
-    ref_SARS2mono_AUC <- dt[library==lib & target==bg & variant_class=="wildtype",mean_SARS2mono_AUC]
-    dt_mutant[library==lib & target==bg,delta_SARS2mono_AUC := mean_SARS2mono_AUC - ref_SARS2mono_AUC]
-    ref_RmYN02mono_AUC <- dt[library==lib & target==bg & variant_class=="wildtype",mean_RmYN02mono_AUC]
-    dt_mutant[library==lib & target==bg,delta_RmYN02mono_AUC := mean_RmYN02mono_AUC - ref_RmYN02mono_AUC]
+    ref_mouse1.3_AUC <- dt[library==lib & target==bg & variant_class=="wildtype",mean_mouse1.3_AUC]
+    dt_mutant[library==lib & target==bg,delta_mouse1.3_AUC := mean_mouse1.3_AUC - ref_mouse1.3_AUC]
+    ref_mouse1.4_AUC <- dt[library==lib & target==bg & variant_class=="wildtype",mean_mouse1.4_AUC]
+    dt_mutant[library==lib & target==bg,delta_mouse1.4_AUC := mean_mouse1.4_AUC - ref_mouse1.4_AUC]
+    ref_mouse1.5_AUC <- dt[library==lib & target==bg & variant_class=="wildtype",mean_mouse1.5_AUC]
+    dt_mutant[library==lib & target==bg,delta_mouse1.5_AUC := mean_mouse1.5_AUC - ref_mouse1.5_AUC]
+    ref_mouse1.6_AUC <- dt[library==lib & target==bg & variant_class=="wildtype",mean_mouse1.6_AUC]
+    dt_mutant[library==lib & target==bg,delta_mouse1.6_AUC := mean_mouse1.6_AUC - ref_mouse1.6_AUC]
+    ref_mouse2.3_AUC <- dt[library==lib & target==bg & variant_class=="wildtype",mean_mouse2.3_AUC]
+    dt_mutant[library==lib & target==bg,delta_mouse2.3_AUC := mean_mouse2.3_AUC - ref_mouse2.3_AUC]
+    ref_mouse2.6_AUC <- dt[library==lib & target==bg & variant_class=="wildtype",mean_mouse2.6_AUC]
+    dt_mutant[library==lib & target==bg,delta_mouse2.6_AUC := mean_mouse2.6_AUC - ref_mouse2.6_AUC]
   }
 }
 
@@ -201,24 +253,18 @@ dt_mutant$site_SARS2 <- as.character(NA)
 
 #do by bg with if/else looping
 for(i in 1:nrow(dt_mutant)){
-  if(dt_mutant[i,target]=="Wuhan_Hu_1"){
+  if(dt_mutant[i,target]=="SARS-CoV-2_WH1"){
     dt_mutant[i,site := as.character(RBD_sites[RBD_sites$site_SARS2_RBD==dt_mutant[i,position] & !is.na(RBD_sites$site_SARS2_RBD),"site_SARS2_spike"])]
     dt_mutant[i,site_SARS2 := as.character(RBD_sites[RBD_sites$site_SARS2_RBD==dt_mutant[i,position] & !is.na(RBD_sites$site_SARS2_RBD),"site_SARS2_spike"])]
-  }else if(dt_mutant[i,target]=="RshSTT182"){
-    dt_mutant[i,site := as.character(RBD_sites[RBD_sites$site_RshSTT182_RBD==dt_mutant[i,position] & !is.na(RBD_sites$site_RshSTT182_RBD),"site_RshSTT182_spike"])]
-    dt_mutant[i,site_SARS2 := as.character(RBD_sites[RBD_sites$site_RshSTT182_RBD==dt_mutant[i,position] & !is.na(RBD_sites$site_RshSTT182_RBD),"site_SARS2_spike"])]
   }else if(dt_mutant[i,target]=="PRD-0038"){
     dt_mutant[i,site:=as.character(RBD_sites[RBD_sites$site_PRD0038_RBD==dt_mutant[i,position] & !is.na(RBD_sites$site_PRD0038_RBD),"site_PRD0038_spike"])]
     dt_mutant[i,site_SARS2 := as.character(RBD_sites[RBD_sites$site_PRD0038_RBD==dt_mutant[i,position] & !is.na(RBD_sites$site_PRD0038_RBD),"site_SARS2_spike"])]
   }else if(dt_mutant[i,target]=="SARS-CoV-1_Urbani"){
     dt_mutant[i,site := as.character(RBD_sites[RBD_sites$site_SARS1_RBD==dt_mutant[i,position] & !is.na(RBD_sites$site_SARS1_RBD),"site_SARS1_spike"])]
     dt_mutant[i,site_SARS2 := as.character(RBD_sites[RBD_sites$site_SARS1_RBD==dt_mutant[i,position] & !is.na(RBD_sites$site_SARS1_RBD),"site_SARS2_spike"])]
-  }else if(dt_mutant[i,target]=="RsYN04"){
-    dt_mutant[i,site := as.character(RBD_sites[RBD_sites$site_RsYN04_RBD==dt_mutant[i,position] & !is.na(RBD_sites$site_RsYN04_RBD),"site_RsYN04_spike"])]
-    dt_mutant[i,site_SARS2 := as.character(RBD_sites[RBD_sites$site_RsYN04_RBD==dt_mutant[i,position] & !is.na(RBD_sites$site_RsYN04_RBD),"site_SARS2_spike"])]
-  }else if(dt_mutant[i,target]=="RmYN02"){
-    dt_mutant[i,site := as.character(RBD_sites[RBD_sites$site_RmYN02_RBD==dt_mutant[i,position] & !is.na(RBD_sites$site_RmYN02_RBD),"site_RmYN02_spike"])]
-    dt_mutant[i,site_SARS2 := as.character(RBD_sites[RBD_sites$site_RmYN02_RBD==dt_mutant[i,position] & !is.na(RBD_sites$site_RmYN02_RBD),"site_SARS2_spike"])]
+  }else if(dt_mutant[i,target]=="SARS-CoV-2_BA2"){
+    dt_mutant[i,site := as.character(RBD_sites[RBD_sites$site_SARS2_RBD==dt_mutant[i,position] & !is.na(RBD_sites$site_SARS2_RBD),"site_SARS2_spike"])]
+    dt_mutant[i,site_SARS2 := as.character(RBD_sites[RBD_sites$site_SARS2_RBD==dt_mutant[i,position] & !is.na(RBD_sites$site_SARS2_RBD),"site_SARS2_spike"])]
   }
 }
 
@@ -227,16 +273,20 @@ dt_mutant[,mutation:=paste(wildtype,site,mutant,sep=""),by=c("wildtype","site","
 dt_mutant[,mutation_SARS2:=paste(wildtype,site_SARS2,mutant,sep=""),by=c("wildtype","site_SARS2","mutant")]
 
 dt_mutant <- unique(dt_mutant[,.(target,wildtype,site,site_SARS2,mutant,mutation,mutation_SARS2,
-                               mean_tetra_AUC,sd_tetra_AUC,delta_tetra_AUC,n_bc_tetra_AUC,
-                               mean_tri_AUC,sd_tri_AUC,delta_tri_AUC,n_bc_tri_AUC,
-                               mean_SARS2mono_AUC,sd_SARS2mono_AUC,delta_SARS2mono_AUC,n_bc_SARS2mono_AUC,
-                               mean_RmYN02mono_AUC,sd_RmYN02mono_AUC,delta_RmYN02mono_AUC,n_bc_RmYN02mono_AUC)])
+                               mean_mouse1.3_AUC,sd_mouse1.3_AUC,delta_mouse1.3_AUC,n_bc_mouse1.3_AUC,
+                               mean_mouse1.4_AUC,sd_mouse1.4_AUC,delta_mouse1.4_AUC,n_bc_mouse1.4_AUC,
+                               mean_mouse1.5_AUC,sd_mouse1.5_AUC,delta_mouse1.5_AUC,n_bc_mouse1.5_AUC,
+                               mean_mouse1.6_AUC,sd_mouse1.6_AUC,delta_mouse1.6_AUC,n_bc_mouse1.6_AUC,
+                               mean_mouse2.3_AUC,sd_mouse2.3_AUC,delta_mouse2.3_AUC,n_bc_mouse2.3_AUC,
+                               mean_mouse2.6_AUC,sd_mouse2.6_AUC,delta_mouse2.6_AUC,n_bc_mouse2.6_AUC)])
 
 #rename some of the columns
-setnames(dt_mutant,"mean_tetra_AUC","tetra_AUC")
-setnames(dt_mutant,"mean_tri_AUC","tri_AUC")
-setnames(dt_mutant,"mean_SARS2mono_AUC","SARS2mono_AUC")
-setnames(dt_mutant,"mean_RmYN02mono_AUC","RmYN02mono_AUC")
+setnames(dt_mutant,"mean_mouse1.3_AUC","mouse1.3_AUC")
+setnames(dt_mutant,"mean_mouse1.4_AUC","mouse1.4_AUC")
+setnames(dt_mutant,"mean_mouse1.5_AUC","mouse1.5_AUC")
+setnames(dt_mutant,"mean_mouse1.6_AUC","mouse1.6_AUC")
+setnames(dt_mutant,"mean_mouse2.3_AUC","mouse2.3_AUC")
+setnames(dt_mutant,"mean_mouse2.6_AUC","mouse2.6_AUC")
 
 ```
 
@@ -253,15 +303,20 @@ Censor any measurements that are from a single bc and/or below a certain SEM? do
 
 Coverage stats on n_barcodes for different measurements in the final pooled measurements.
 
-```{r n_barcode_plots, echo=T, fig.width=8, fig.height=6, fig.align="center", dpi=300,dev="png"}
-par(mfrow=c(2,2))
-hist(dt_mutant[wildtype!=mutant, n_bc_tetra_AUC],col="gray50",main=paste("mutant tetra_AUC score,\nmedian ",median(dt_mutant[wildtype!=mutant, n_bc_tetra_AUC],na.rm=T),sep=""),right=F,breaks=max(dt_mutant[wildtype!=mutant, n_bc_tetra_AUC],na.rm=T),xlab="")
+```{r n_barcode_plots, echo=T, fig.width=8, fig.height=9, fig.align="center", dpi=300,dev="png"}
+par(mfrow=c(3,2))
+hist(dt_mutant[wildtype!=mutant, n_bc_mouse1.3_AUC],col="gray50",main=paste("mutant mouse1.3_AUC score,\nmedian ",median(dt_mutant[wildtype!=mutant, n_bc_mouse1.3_AUC],na.rm=T),sep=""),right=F,breaks=max(dt_mutant[wildtype!=mutant, n_bc_mouse1.3_AUC],na.rm=T),xlab="")
 
-hist(dt_mutant[wildtype!=mutant, n_bc_tri_AUC],col="gray50",main=paste("mutant tri_AUC score,\nmedian ",median(dt_mutant[wildtype!=mutant, n_bc_tri_AUC],na.rm=T),sep=""),right=F,breaks=max(dt_mutant[wildtype!=mutant, n_bc_tri_AUC],na.rm=T),xlab="")
+hist(dt_mutant[wildtype!=mutant, n_bc_mouse1.4_AUC],col="gray50",main=paste("mutant mouse1.4_AUC score,\nmedian ",median(dt_mutant[wildtype!=mutant, n_bc_mouse1.4_AUC],na.rm=T),sep=""),right=F,breaks=max(dt_mutant[wildtype!=mutant, n_bc_mouse1.4_AUC],na.rm=T),xlab="")
 
-hist(dt_mutant[wildtype!=mutant, n_bc_SARS2mono_AUC],col="gray50",main=paste("mutant SARS2mono_AUC score,\nmedian ",median(dt_mutant[wildtype!=mutant, n_bc_SARS2mono_AUC],na.rm=T),sep=""),right=F,breaks=max(dt_mutant[wildtype!=mutant, n_bc_SARS2mono_AUC],na.rm=T),xlab="")
+hist(dt_mutant[wildtype!=mutant, n_bc_mouse1.5_AUC],col="gray50",main=paste("mutant mouse1.5_AUC score,\nmedian ",median(dt_mutant[wildtype!=mutant, n_bc_mouse1.5_AUC],na.rm=T),sep=""),right=F,breaks=max(dt_mutant[wildtype!=mutant, n_bc_mouse1.5_AUC],na.rm=T),xlab="")
 
-hist(dt_mutant[wildtype!=mutant, n_bc_RmYN02mono_AUC],col="gray50",main=paste("mutant RmYN02mono_AUC score,\nmedian ",median(dt_mutant[wildtype!=mutant, n_bc_RmYN02mono_AUC],na.rm=T),sep=""),right=F,breaks=max(dt_mutant[wildtype!=mutant, n_bc_RmYN02mono_AUC],na.rm=T),xlab="")
+hist(dt_mutant[wildtype!=mutant, n_bc_mouse1.6_AUC],col="gray50",main=paste("mutant mouse1.6_AUC score,\nmedian ",median(dt_mutant[wildtype!=mutant, n_bc_mouse1.6_AUC],na.rm=T),sep=""),right=F,breaks=max(dt_mutant[wildtype!=mutant, n_bc_mouse1.6_AUC],na.rm=T),xlab="")
+
+hist(dt_mutant[wildtype!=mutant, n_bc_mouse2.3_AUC],col="gray50",main=paste("mutant mouse2.3_AUC score,\nmedian ",median(dt_mutant[wildtype!=mutant, n_bc_mouse2.3_AUC],na.rm=T),sep=""),right=F,breaks=max(dt_mutant[wildtype!=mutant, n_bc_mouse2.3_AUC],na.rm=T),xlab="")
+
+hist(dt_mutant[wildtype!=mutant, n_bc_mouse2.6_AUC],col="gray50",main=paste("mutant mouse2.6_AUC score,\nmedian ",median(dt_mutant[wildtype!=mutant, n_bc_mouse2.6_AUC],na.rm=T),sep=""),right=F,breaks=max(dt_mutant[wildtype!=mutant, n_bc_mouse2.6_AUC],na.rm=T),xlab="")
+
 
 invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_histogram_n_bc_per_geno_pooled-libs.pdf",sep="")))
 ```
@@ -280,56 +335,72 @@ for(i in 1:nrow(dt_mutant)){
 ```
 Serum binding values really drop off below delta_expr values of ~-1. But even zoomed in on the ~-1, we can see there is a correlation. I wonder if we could do something like a spline or linear model and apply correction?
 
-```{r plot_expression, echo=T, fig.width=6, fig.height=12, fig.align="center", dpi=300,dev="png"}
-par(mfrow=c(4,2))
-plot(dt_mutant[,delta_expr],dt_mutant[,delta_tetra_AUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera AUC [tetra]");abline(v=-1,lty=2,col="red",main="tetra")
+```{r plot_expression, echo=T, fig.width=6, fig.height=18, fig.align="center", dpi=300,dev="png"}
+par(mfrow=c(6,2))
+plot(dt_mutant[wildtype!=mutant,delta_expr],dt_mutant[wildtype!=mutant,delta_mouse1.3_AUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera AUC [mouse1.3]");abline(v=-1,lty=2,col="red",main="mouse1.3")
 
-plot(dt_mutant[delta_expr > -1,delta_expr],dt_mutant[delta_expr > -1,delta_tetra_AUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera AUC [tetra]"); abline(lm(dt_mutant[delta_expr > -1,delta_tetra_AUC] ~ dt_mutant[delta_expr > -1,delta_expr]),lty=2,col="red")
+plot(dt_mutant[wildtype!=mutant & delta_expr > -1,delta_expr],dt_mutant[wildtype!=mutant & delta_expr > -1,delta_mouse1.3_AUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera AUC [mouse1.3]"); abline(lm(dt_mutant[wildtype!=mutant & delta_expr > -1,delta_mouse1.3_AUC] ~ dt_mutant[wildtype!=mutant & delta_expr > -1,delta_expr]),lty=2,col="red")
 
-plot(dt_mutant[,delta_expr],dt_mutant[,delta_tri_AUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera AUC [tri]");abline(v=-1,lty=2,col="red",main="tri")
+plot(dt_mutant[wildtype!=mutant,delta_expr],dt_mutant[wildtype!=mutant,delta_mouse1.4_AUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera AUC [mouse1.4]");abline(v=-1,lty=2,col="red",main="mouse1.4")
 
-plot(dt_mutant[delta_expr > -1,delta_expr],dt_mutant[delta_expr > -1,delta_tri_AUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera AUC [tri]"); abline(lm(dt_mutant[delta_expr > -1,delta_tri_AUC] ~ dt_mutant[delta_expr > -1,delta_expr]),lty=2,col="red")
+plot(dt_mutant[wildtype!=mutant & delta_expr > -1,delta_expr],dt_mutant[wildtype!=mutant & delta_expr > -1,delta_mouse1.4_AUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera AUC [mouse1.4]"); abline(lm(dt_mutant[wildtype!=mutant & delta_expr > -1,delta_mouse1.4_AUC] ~ dt_mutant[wildtype!=mutant & delta_expr > -1,delta_expr]),lty=2,col="red")
 
-plot(dt_mutant[,delta_expr],dt_mutant[,delta_SARS2mono_AUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera AUC [SARS2mono]");abline(v=-1,lty=2,col="red",main="SARS2mono")
+plot(dt_mutant[wildtype!=mutant,delta_expr],dt_mutant[wildtype!=mutant,delta_mouse1.5_AUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera AUC [mouse1.5]");abline(v=-1,lty=2,col="red",main="mouse1.5")
 
-plot(dt_mutant[delta_expr > -1,delta_expr],dt_mutant[delta_expr > -1,delta_SARS2mono_AUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera AUC [SARS2mono]");  abline(lm(dt_mutant[delta_expr > -1,delta_SARS2mono_AUC] ~ dt_mutant[delta_expr > -1,delta_expr]),lty=2,col="red")
+plot(dt_mutant[wildtype!=mutant & delta_expr > -1,delta_expr],dt_mutant[wildtype!=mutant & delta_expr > -1,delta_mouse1.5_AUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera AUC [mouse1.5]");  abline(lm(dt_mutant[wildtype!=mutant & delta_expr > -1,delta_mouse1.5_AUC] ~ dt_mutant[wildtype!=mutant & delta_expr > -1,delta_expr]),lty=2,col="red")
 
-plot(dt_mutant[,delta_expr],dt_mutant[,delta_RmYN02mono_AUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera AUC [RmYN02mono]");abline(v=-1,lty=2,col="red",main="RmYN02mono")
+plot(dt_mutant[wildtype!=mutant,delta_expr],dt_mutant[wildtype!=mutant,delta_mouse1.6_AUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera AUC [mouse1.6]");abline(v=-1,lty=2,col="red",main="mouse1.6")
 
-plot(dt_mutant[delta_expr > -1,delta_expr],dt_mutant[delta_expr > -1,delta_RmYN02mono_AUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera AUC [RmYN02mono]");  abline(lm(dt_mutant[delta_expr > -1,delta_RmYN02mono_AUC] ~ dt_mutant[delta_expr > -1,delta_expr]),lty=2,col="red")
+plot(dt_mutant[wildtype!=mutant & delta_expr > -1,delta_expr],dt_mutant[wildtype!=mutant & delta_expr > -1,delta_mouse1.6_AUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera AUC [mouse1.6]");  abline(lm(dt_mutant[wildtype!=mutant & delta_expr > -1,delta_mouse1.6_AUC] ~ dt_mutant[wildtype!=mutant & delta_expr > -1,delta_expr]),lty=2,col="red")
 
+plot(dt_mutant[wildtype!=mutant,delta_expr],dt_mutant[wildtype!=mutant,delta_mouse2.3_AUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera AUC [mouse2.3]");abline(v=-1,lty=2,col="red",main="mouse2.3")
+
+plot(dt_mutant[wildtype!=mutant & delta_expr > -1,delta_expr],dt_mutant[wildtype!=mutant & delta_expr > -1,delta_mouse2.3_AUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera AUC [mouse2.3]"); abline(lm(dt_mutant[wildtype!=mutant & delta_expr > -1,delta_mouse2.3_AUC] ~ dt_mutant[wildtype!=mutant & delta_expr > -1,delta_expr]),lty=2,col="red")
+
+plot(dt_mutant[wildtype!=mutant,delta_expr],dt_mutant[wildtype!=mutant,delta_mouse2.6_AUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera AUC [mouse2.6]");abline(v=-1,lty=2,col="red",main="mouse2.6")
+
+plot(dt_mutant[wildtype!=mutant & delta_expr > -1,delta_expr],dt_mutant[wildtype!=mutant & delta_expr > -1,delta_mouse2.6_AUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera AUC [mouse2.6]");  abline(lm(dt_mutant[wildtype!=mutant & delta_expr > -1,delta_mouse2.6_AUC] ~ dt_mutant[wildtype!=mutant & delta_expr > -1,delta_expr]),lty=2,col="red")
 ```
 
-Derive a normalized AUC metric that (i) filters out variants with delta_expr <-1 and (ii) normalizes by the linear trend between delta-AUC and delta-expr in this window
+Derive a normalized AUC metric that (i) filters out variants with delta_expr <-1 up to 0 and (ii) normalizes by the linear trend between delta-AUC and delta-expr in this window (normalize by linear line from -0.5 and up to avoid creep-in of some unfolded muts). Let's leave like this, but makign note I might want to push stringent filter to remove things with delta_expr < -0.75 instead of -1
 
-```{r derive_norm_AUC, echo=T, fig.width=8, fig.height=8, fig.align="center", dpi=300,dev="png"}
-dt_mutant[,c("delta_tetra_normAUC","delta_tri_normAUC","delta_SARS2mono_normAUC","delta_RmYN02mono_normAUC"):=as.numeric(NA)]
+```{r derive_norm_AUC, echo=T, fig.width=8, fig.height=12, fig.align="center", dpi=300,dev="png"}
+dt_mutant[,c("delta_mouse1.3_normAUC","delta_mouse1.4_normAUC","delta_mouse1.5_normAUC","delta_mouse1.6_normAUC","delta_mouse2.3_normAUC","delta_mouse2.6_normAUC"):=as.numeric(NA)]
 
-lm_tetra <- lm(dt_mutant[delta_expr > -1,delta_tetra_AUC] ~ dt_mutant[delta_expr > -1,delta_expr])
-dt_mutant[delta_expr > -1, delta_tetra_normAUC := delta_tetra_AUC - (lm_tetra$coefficients[2] * delta_expr)]
+lm_mouse1.3 <- lm(dt_mutant[wildtype != mutant & delta_expr > -0.5,delta_mouse1.3_AUC] ~ dt_mutant[wildtype != mutant & delta_expr > -0.5,delta_expr]) #0.8602862
+dt_mutant[delta_expr > -1, delta_mouse1.3_normAUC := delta_mouse1.3_AUC - (lm_mouse1.3$coefficients[2] * delta_expr)]
 
-lm_tri <- lm(dt_mutant[delta_expr > -1,delta_tri_AUC] ~ dt_mutant[delta_expr > -1,delta_expr])
-dt_mutant[delta_expr > -1, delta_tri_normAUC := delta_tri_AUC - (lm_tri$coefficients[2] * delta_expr)]
+lm_mouse1.4 <- lm(dt_mutant[wildtype != mutant & delta_expr > -0.5,delta_mouse1.4_AUC] ~ dt_mutant[wildtype != mutant & delta_expr > -0.5,delta_expr]) #0.8374225 
+dt_mutant[delta_expr > -1, delta_mouse1.4_normAUC := delta_mouse1.4_AUC - (lm_mouse1.4$coefficients[2] * delta_expr)]
 
-lm_SARS2mono <- lm(dt_mutant[delta_expr > -1,delta_SARS2mono_AUC] ~ dt_mutant[delta_expr > -1,delta_expr])
-dt_mutant[delta_expr > -1, delta_SARS2mono_normAUC := delta_SARS2mono_AUC - (lm_SARS2mono$coefficients[2] * delta_expr)]
+lm_mouse1.5 <- lm(dt_mutant[wildtype != mutant & delta_expr > -0.5,delta_mouse1.5_AUC] ~ dt_mutant[wildtype != mutant & delta_expr > -0.5,delta_expr]) #0.6649518
+dt_mutant[delta_expr > -1, delta_mouse1.5_normAUC := delta_mouse1.5_AUC - (lm_mouse1.5$coefficients[2] * delta_expr)]
 
-lm_RmYN02mono <- lm(dt_mutant[delta_expr > -1,delta_RmYN02mono_AUC] ~ dt_mutant[delta_expr > -1,delta_expr])
-dt_mutant[delta_expr > -1, delta_RmYN02mono_normAUC := delta_RmYN02mono_AUC - (lm_RmYN02mono$coefficients[2] * delta_expr)]
+lm_mouse1.6 <- lm(dt_mutant[wildtype != mutant & delta_expr > -0.5,delta_mouse1.6_AUC] ~ dt_mutant[wildtype != mutant & delta_expr > -0.5,delta_expr]) #1.000988
+dt_mutant[delta_expr > -1, delta_mouse1.6_normAUC := delta_mouse1.6_AUC - (lm_mouse1.6$coefficients[2] * delta_expr)]
 
-par(mfrow=c(2,2))
+lm_mouse2.3 <- lm(dt_mutant[wildtype != mutant & delta_expr > -0.5,delta_mouse2.3_AUC] ~ dt_mutant[wildtype != mutant & delta_expr > -0.5,delta_expr]) #0.9867039
+dt_mutant[delta_expr > -1, delta_mouse2.3_normAUC := delta_mouse2.3_AUC - (lm_mouse2.3$coefficients[2] * delta_expr)]
 
-plot(dt_mutant[delta_expr > -1,delta_expr],dt_mutant[delta_expr > -1,delta_tetra_normAUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera expr-norm AUC [tetra]"); abline(lm(dt_mutant[delta_expr > -1,delta_tetra_normAUC] ~ dt_mutant[delta_expr > -1,delta_expr]),lty=2,col="red")
+lm_mouse2.6 <- lm(dt_mutant[wildtype != mutant & delta_expr > -0.5,delta_mouse2.6_AUC] ~ dt_mutant[wildtype != mutant & delta_expr > -0.5,delta_expr]) #1.149761
+dt_mutant[delta_expr > -1, delta_mouse2.6_normAUC := delta_mouse2.6_AUC - (lm_mouse2.6$coefficients[2] * delta_expr)]
 
-plot(dt_mutant[delta_expr > -1,delta_expr],dt_mutant[delta_expr > -1,delta_tri_normAUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera expr-norm AUC [tri]"); abline(lm(dt_mutant[delta_expr > -1,delta_tri_normAUC] ~ dt_mutant[delta_expr > -1,delta_expr]),lty=2,col="red")
+par(mfrow=c(3,2))
 
-plot(dt_mutant[delta_expr > -1,delta_expr],dt_mutant[delta_expr > -1,delta_SARS2mono_normAUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera expr-norm AUC [SARS2mono]");  abline(lm(dt_mutant[delta_expr > -1,delta_SARS2mono_normAUC] ~ dt_mutant[delta_expr > -1,delta_expr]),lty=2,col="red")
+plot(dt_mutant[delta_expr > -1,delta_expr],dt_mutant[delta_expr > -1,delta_mouse1.3_normAUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera expr-norm AUC [mouse1.3]"); abline(h=0,lty=2,col="red")
 
-plot(dt_mutant[delta_expr > -1,delta_expr],dt_mutant[delta_expr > -1,delta_RmYN02mono_normAUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera expr-norm AUC [RmYN02mono]");  abline(lm(dt_mutant[delta_expr > -1,delta_RmYN02mono_normAUC] ~ dt_mutant[delta_expr > -1,delta_expr]),lty=2,col="red")
+plot(dt_mutant[delta_expr > -1,delta_expr],dt_mutant[delta_expr > -1,delta_mouse1.4_normAUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera expr-norm AUC [mouse1.4]"); abline(h=0,lty=2,col="red")
 
+plot(dt_mutant[delta_expr > -1,delta_expr],dt_mutant[delta_expr > -1,delta_mouse1.5_normAUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera expr-norm AUC [mouse1.5]");  abline(h=0,lty=2,col="red")
+
+plot(dt_mutant[delta_expr > -1,delta_expr],dt_mutant[delta_expr > -1,delta_mouse1.6_normAUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera expr-norm AUC [mouse1.6]");  abline(h=0,lty=2,col="red")
+
+plot(dt_mutant[delta_expr > -1,delta_expr],dt_mutant[delta_expr > -1,delta_mouse2.3_normAUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera expr-norm AUC [mouse2.3]"); abline(h=0,lty=2,col="red")
+
+plot(dt_mutant[delta_expr > -1,delta_expr],dt_mutant[delta_expr > -1,delta_mouse2.6_normAUC],pch=16,col="#00000040",xlab="mutant expression",ylab="mutant sera expr-norm AUC [mouse2.6]");  abline(h=0,lty=2,col="red")
 
 ```
-Normalization coefficients were: tetra `r lm_tetra$coefficients[2]`, tri `r lm_tri$coefficients[2]`, SARS2mono `r lm_SARS2mono$coefficients[2]`, and RmYN02mono `r lm_RmYN02mono$coefficients[2]`, for an average coefficient of `r mean(c(lm_tetra$coefficients[2], lm_tri$coefficients[2], lm_SARS2mono$coefficients[2], lm_RmYN02mono$coefficients[2]))`
+Normalization coefficients were: mouse1.3 `r lm_mouse1.3$coefficients[2]`, mouse1.4 `r lm_mouse1.4$coefficients[2]`, mouse1.5 `r lm_mouse1.5$coefficients[2]`, mouse1.6 `r lm_mouse1.6$coefficients[2]`, mouse2.3 `r lm_mouse2.3$coefficients[2]`, and mouse2.6 `r lm_mouse2.6$coefficients[2]`, 
 
 
 ## Heatmaps!
@@ -339,10 +410,8 @@ Make heatmaps of raw AUC as well as delta-AUC *expression-normalized* (and expre
 Order factor variables for plotting.
 
 ```{r order_plotting_factors}
-
 #order targets for plotting
-dt_mutant[target=="Wuhan_Hu_1",target:="SARS-CoV-2_WH1"]
-dt_mutant$target <- factor(dt_mutant$target,levels=c("SARS-CoV-2_WH1","RshSTT182","SARS-CoV-1_Urbani","RsYN04","PRD-0038","RmYN02"))
+dt_mutant$target <- factor(dt_mutant$target,levels=c("SARS-CoV-2_WH1","SARS-CoV-2_BA2","SARS-CoV-1_Urbani","PRD-0038"))
 #order mutant as a factor for grouping by rough biochemical grouping
 dt_mutant$mutant <- factor(dt_mutant$mutant, levels=c("C","P","G","V","M","L","I","A","F","W","Y","T","S","N","Q","E","D","H","K","R"))
 #order the sites character vector (becuase of 372a number for the PRD0038 insertion)
@@ -355,15 +424,19 @@ dt_mutant[as.character(mutant)==as.character(wildtype),wildtype_indicator := "x"
 
 #make temp long-form data frame
 temp <- data.table::melt(dt_mutant[, .(target,site,site_SARS2,mutant,wildtype_indicator,
-                                      tetra_AUC,delta_tetra_AUC,delta_tetra_normAUC,
-                                      tri_AUC,delta_tri_AUC,delta_tri_normAUC,
-                                      SARS2mono_AUC,delta_SARS2mono_AUC,delta_SARS2mono_normAUC,
-                                      RmYN02mono_AUC,delta_RmYN02mono_AUC,delta_RmYN02mono_normAUC)],
+                                      mouse1.3_AUC,delta_mouse1.3_AUC,delta_mouse1.3_normAUC,
+                                      mouse1.4_AUC,delta_mouse1.4_AUC,delta_mouse1.4_normAUC,
+                                      mouse1.5_AUC,delta_mouse1.5_AUC,delta_mouse1.5_normAUC,
+                                      mouse1.6_AUC,delta_mouse1.6_AUC,delta_mouse1.6_normAUC,
+                                      mouse2.3_AUC,delta_mouse2.3_AUC,delta_mouse2.3_normAUC,
+                                      mouse2.6_AUC,delta_mouse2.6_AUC,delta_mouse2.6_normAUC)],
                          id.vars=c("target","site","site_SARS2","mutant","wildtype_indicator"),
-                         measure.vars=c("tetra_AUC","delta_tetra_AUC","delta_tetra_normAUC",
-                                        "tri_AUC","delta_tri_AUC","delta_tri_normAUC",
-                                        "SARS2mono_AUC","delta_SARS2mono_AUC","delta_SARS2mono_normAUC",
-                                        "RmYN02mono_AUC","delta_RmYN02mono_AUC","delta_RmYN02mono_normAUC"),
+                         measure.vars=c("mouse1.3_AUC","delta_mouse1.3_AUC","delta_mouse1.3_normAUC",
+                                        "mouse1.4_AUC","delta_mouse1.4_AUC","delta_mouse1.4_normAUC",
+                                        "mouse1.5_AUC","delta_mouse1.5_AUC","delta_mouse1.5_normAUC",
+                                        "mouse1.6_AUC","delta_mouse1.6_AUC","delta_mouse1.6_normAUC",
+                                        "mouse2.3_AUC","delta_mouse2.3_AUC","delta_mouse2.3_normAUC",
+                                        "mouse2.6_AUC","delta_mouse2.6_AUC","delta_mouse2.6_normAUC"),
                          variable.name="measurement",value.name="value")
 
 #for method to duplicate aa labels on right side of plot https://github.com/tidyverse/ggplot2/issues/3171
@@ -381,13 +454,13 @@ guide_train.guide_axis_trans <- function(x, ...) {
 }
 
 ```
-Make heatmaps faceted by target, showing raw affinity and delta-affinity of muts relative to respective
+Make heatmaps faceted by target, showing raw AUC and delta-AUC of muts relative to respective wildtype
 
-First, tetra sera
+First, mouse1.3 sera
 
-```{r heatmap_DMS_AUC-by-target_tetra-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[measurement=="tetra_AUC",],aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#FFFFFF","#003366"),limits=c(0,8.5),na.value="gray70")+
+```{r heatmap_DMS_AUC-by-target_mouse1.3-sera, fig.width=25,fig.height=12,fig.align="center", dpi=500,dev="png",echo=T}
+p1 <- ggplot(temp[measurement=="mouse1.3_AUC",],aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
+  scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(0,8.505),values=c(0,2/8.505,8.505/8.505),na.value="gray40")+ #effective range 2 to 8.5(8.505)
   #scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(5,12),values=c(0,1/7,7/7),na.value="yellow")+ #three notches in case I want to 'censor' closer to the 5 boundary condition
   #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
   labs(x="",y="")+theme_classic(base_size=9)+
@@ -398,16 +471,16 @@ p1 <- ggplot(temp[measurement=="tetra_AUC",],aes(site_SARS2,mutant))+geom_tile(a
   theme(strip.text.x = element_text(size = 18))
 
 p1
-invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_AUC-by-target_tetra.pdf",sep="")))
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_AUC-by-target_mouse1.3.pdf",sep="")))
 ```
 
-Same but illustrating delta_AUC by target (each delta noramlized to its wt background), for tetra sera.
+Same but illustrating delta_AUC by target (each delta noramlized to its wt background), for mouse1.3 sera.
 
-```{r heatmap_DMS_delta-AUC-by-target_tetra-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[measurement=="delta_tetra_AUC",],aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
+```{r heatmap_DMS_delta-AUC-by-target_mouse1.3-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
+p1 <- ggplot(temp[measurement=="delta_mouse1.3_AUC",],aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
   scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"),
-                       limits=c(-8,2),
-                       values=c(0/10,4/10,6/10,8/10,8.5/10,9/10, 10/10),
+                       limits=c(-8.5,4.5),
+                       values=c(0/13,2.5/13,5.5/13,8.5/13,9.5/13,10.5/13, 13/13),
                        na.value="gray70")+
   #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
   labs(x="",y="")+theme_classic(base_size=9)+
@@ -418,17 +491,17 @@ p1 <- ggplot(temp[measurement=="delta_tetra_AUC",],aes(site_SARS2,mutant))+geom_
   theme(strip.text.x = element_text(size = 18))
 
 p1
-invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-AUC-by-target_tetra.pdf",sep="")))
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-AUC-by-target_mouse1.3.pdf",sep="")))
 ```
 
-Same but illustrating delta_normAUC (expression-normalized+censored) by target (each delta noramlized to its wt background), for tetra sera.
+Same but illustrating delta_normAUC (expression-normalized+censored) by target (each delta noramlized to its wt background), for mouse1.3 sera.
 
-```{r heatmap_DMS_delta-normAUC-by-target_tetra-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[measurement=="delta_tetra_normAUC",],
+```{r heatmap_DMS_delta-normAUC-by-target_mouse1.3-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
+p1 <- ggplot(temp[measurement=="delta_mouse1.3_normAUC",],
              aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C"), #if showing blue color
-                       limits=c(-5,2),
-                       values=c(0/7,3/7,4/7,5/7,6/7,7/7),
+  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"), #if showing blue color
+                       limits=c(-5,5),
+                       values=c(0/10,2/10,3.5/10,5/10,6.5/10,8/10,10/10),
                        na.value="gray70")+
   # scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#FFFFFF","#FFFFFF","#FFFFFF"), #if censoring >0 blue
   #                      limits=c(-5,2),
@@ -443,14 +516,14 @@ p1 <- ggplot(temp[measurement=="delta_tetra_normAUC",],
   theme(strip.text.x = element_text(size = 18))
 
 p1
-invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-normAUC-by-target_tetra.pdf",sep="")))
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-normAUC-by-target_mouse1.3.pdf",sep="")))
 ```
 
-Next, tri sera
+Next, mouse1.4 sera
 
-```{r heatmap_DMS_AUC-by-target_tri-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[measurement=="tri_AUC",],aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#FFFFFF","#003366"),limits=c(0,8.5),na.value="gray70")+
+```{r heatmap_DMS_AUC-by-target_mouse1.4-sera, fig.width=25,fig.height=12,fig.align="center", dpi=500,dev="png",echo=T}
+p1 <- ggplot(temp[measurement=="mouse1.4_AUC",],aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
+  scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(0,8.505),values=c(0,2/8.505,8.505/8.505),na.value="gray40")+ #effective range 2 to 8.5(8.505)
   #scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(5,12),values=c(0,1/7,7/7),na.value="yellow")+ #three notches in case I want to 'censor' closer to the 5 boundary condition
   #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
   labs(x="",y="")+theme_classic(base_size=9)+
@@ -461,16 +534,16 @@ p1 <- ggplot(temp[measurement=="tri_AUC",],aes(site_SARS2,mutant))+geom_tile(aes
   theme(strip.text.x = element_text(size = 18))
 
 p1
-invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_AUC-by-target_tri.pdf",sep="")))
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_AUC-by-target_mouse1.4.pdf",sep="")))
 ```
 
-Same but illustrating delta_AUC by target (each delta noramlized to its wt background), for tri sera.
+Same but illustrating delta_AUC by target (each delta noramlized to its wt background), for mouse1.4 sera.
 
-```{r heatmap_DMS_delta-AUC-by-target_tri-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[measurement=="delta_tri_AUC",],aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
+```{r heatmap_DMS_delta-AUC-by-target_mouse1.4-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
+p1 <- ggplot(temp[measurement=="delta_mouse1.4_AUC",],aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
   scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"),
-                       limits=c(-8,2),
-                       values=c(0/10,4/10,6/10,8/10,8.5/10,9/10, 10/10),
+                       limits=c(-8.5,4.5),
+                       values=c(0/13,2.5/13,5.5/13,8.5/13,9.5/13,10.5/13, 13/13),
                        na.value="gray70")+
   #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
   labs(x="",y="")+theme_classic(base_size=9)+
@@ -481,17 +554,17 @@ p1 <- ggplot(temp[measurement=="delta_tri_AUC",],aes(site_SARS2,mutant))+geom_ti
   theme(strip.text.x = element_text(size = 18))
 
 p1
-invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-AUC-by-target_tri.pdf",sep="")))
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-AUC-by-target_mouse1.4.pdf",sep="")))
 ```
 
-expression-normalized/censored, tri
+Same but illustrating delta_normAUC (expression-normalized+censored) by target (each delta noramlized to its wt background), for mouse1.4 sera.
 
-```{r heatmap_DMS_delta-normAUC-by-target_tri-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[measurement=="delta_tri_normAUC",],
+```{r heatmap_DMS_delta-normAUC-by-target_mouse1.4-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
+p1 <- ggplot(temp[measurement=="delta_mouse1.4_normAUC",],
              aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C"), #if showing blue color
-                       limits=c(-5,2),
-                       values=c(0/7,3/7,4/7,5/7,6/7,7/7),
+  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"), #if showing blue color
+                       limits=c(-5,5),
+                       values=c(0/10,2/10,3.5/10,5/10,6.5/10,8/10,10/10),
                        na.value="gray70")+
   # scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#FFFFFF","#FFFFFF","#FFFFFF"), #if censoring >0 blue
   #                      limits=c(-5,2),
@@ -506,14 +579,14 @@ p1 <- ggplot(temp[measurement=="delta_tri_normAUC",],
   theme(strip.text.x = element_text(size = 18))
 
 p1
-invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-normAUC-by-target_tri.pdf",sep="")))
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-normAUC-by-target_mouse1.4.pdf",sep="")))
 ```
 
-Next, SARS2mono sera
+Next, mouse1.5 sera
 
-```{r heatmap_DMS_AUC-by-target_SARS2mono-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[measurement=="SARS2mono_AUC",],aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#FFFFFF","#003366"),limits=c(0,8.5),na.value="gray70")+
+```{r heatmap_DMS_AUC-by-target_mouse1.5-sera, fig.width=25,fig.height=12,fig.align="center", dpi=500,dev="png",echo=T}
+p1 <- ggplot(temp[measurement=="mouse1.5_AUC",],aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
+  scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(0,8.505),values=c(0,2/8.505,8.505/8.505),na.value="gray40")+ #effective range 2 to 8.5(8.505)
   #scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(5,12),values=c(0,1/7,7/7),na.value="yellow")+ #three notches in case I want to 'censor' closer to the 5 boundary condition
   #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
   labs(x="",y="")+theme_classic(base_size=9)+
@@ -524,16 +597,16 @@ p1 <- ggplot(temp[measurement=="SARS2mono_AUC",],aes(site_SARS2,mutant))+geom_ti
   theme(strip.text.x = element_text(size = 18))
 
 p1
-invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_AUC-by-target_SARS2mono.pdf",sep="")))
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_AUC-by-target_mouse1.5.pdf",sep="")))
 ```
 
-Same but illustrating delta_AUC by target (each delta noramlized to its wt background), for SARS2mono sera.
+Same but illustrating delta_AUC by target (each delta noramlized to its wt background), for mouse1.5 sera.
 
-```{r heatmap_DMS_delta-AUC-by-target_SARS2mono-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[measurement=="delta_SARS2mono_AUC",],aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
+```{r heatmap_DMS_delta-AUC-by-target_mouse1.5-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
+p1 <- ggplot(temp[measurement=="delta_mouse1.5_AUC",],aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
   scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"),
-                       limits=c(-8,2),
-                       values=c(0/10,4/10,6/10,8/10,8.5/10,9/10, 10/10),
+                       limits=c(-8.5,4.5),
+                       values=c(0/13,2.5/13,5.5/13,8.5/13,9.5/13,10.5/13, 13/13),
                        na.value="gray70")+
   #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
   labs(x="",y="")+theme_classic(base_size=9)+
@@ -544,17 +617,17 @@ p1 <- ggplot(temp[measurement=="delta_SARS2mono_AUC",],aes(site_SARS2,mutant))+g
   theme(strip.text.x = element_text(size = 18))
 
 p1
-invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-AUC-by-target_SARS2mono.pdf",sep="")))
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-AUC-by-target_mouse1.5.pdf",sep="")))
 ```
 
-expression-normalized/censored, SARS2mono
+Same but illustrating delta_normAUC (expression-normalized+censored) by target (each delta noramlized to its wt background), for mouse1.5 sera.
 
-```{r heatmap_DMS_delta-normAUC-by-target_SARS2mono-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[measurement=="delta_SARS2mono_normAUC",],
+```{r heatmap_DMS_delta-normAUC-by-target_mouse1.5-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
+p1 <- ggplot(temp[measurement=="delta_mouse1.5_normAUC",],
              aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C"), #if showing blue color
-                       limits=c(-5,2),
-                       values=c(0/7,3/7,4/7,5/7,6/7,7/7),
+  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"), #if showing blue color
+                       limits=c(-5,5),
+                       values=c(0/10,2/10,3.5/10,5/10,6.5/10,8/10,10/10),
                        na.value="gray70")+
   # scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#FFFFFF","#FFFFFF","#FFFFFF"), #if censoring >0 blue
   #                      limits=c(-5,2),
@@ -569,14 +642,14 @@ p1 <- ggplot(temp[measurement=="delta_SARS2mono_normAUC",],
   theme(strip.text.x = element_text(size = 18))
 
 p1
-invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-normAUC-by-target_SARS2mono.pdf",sep="")))
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-normAUC-by-target_mouse1.5.pdf",sep="")))
 ```
 
-Last, RmYN02mono sera
+Next, mouse1.6 sera
 
-```{r heatmap_DMS_AUC-by-target_RmYN02mono-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[measurement=="RmYN02mono_AUC",],aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#FFFFFF","#003366"),limits=c(0,8.5),na.value="gray70")+
+```{r heatmap_DMS_AUC-by-target_mouse1.6-sera, fig.width=25,fig.height=12,fig.align="center", dpi=500,dev="png",echo=T}
+p1 <- ggplot(temp[measurement=="mouse1.6_AUC",],aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
+  scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(0,8.505),values=c(0,2/8.505,8.505/8.505),na.value="gray40")+ #effective range 2 to 8.5(8.505)
   #scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(5,12),values=c(0,1/7,7/7),na.value="yellow")+ #three notches in case I want to 'censor' closer to the 5 boundary condition
   #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
   labs(x="",y="")+theme_classic(base_size=9)+
@@ -587,16 +660,16 @@ p1 <- ggplot(temp[measurement=="RmYN02mono_AUC",],aes(site_SARS2,mutant))+geom_t
   theme(strip.text.x = element_text(size = 18))
 
 p1
-invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_AUC-by-target_RmYN02mono.pdf",sep="")))
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_AUC-by-target_mouse1.6.pdf",sep="")))
 ```
 
-Same but illustrating delta_AUC by target (each delta noramlized to its wt background), for RmYN02mono sera.
+Same but illustrating delta_AUC by target (each delta noramlized to its wt background), for mouse1.6 sera.
 
-```{r heatmap_DMS_delta-AUC-by-target_RmYN02mono-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[measurement=="delta_RmYN02mono_AUC",],aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
+```{r heatmap_DMS_delta-AUC-by-target_mouse1.6-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
+p1 <- ggplot(temp[measurement=="delta_mouse1.6_AUC",],aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
   scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"),
-                       limits=c(-8,2),
-                       values=c(0/10,4/10,6/10,8/10,8.5/10,9/10, 10/10),
+                       limits=c(-8.5,4.5),
+                       values=c(0/13,2.5/13,5.5/13,8.5/13,9.5/13,10.5/13, 13/13),
                        na.value="gray70")+
   #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
   labs(x="",y="")+theme_classic(base_size=9)+
@@ -607,17 +680,17 @@ p1 <- ggplot(temp[measurement=="delta_RmYN02mono_AUC",],aes(site_SARS2,mutant))+
   theme(strip.text.x = element_text(size = 18))
 
 p1
-invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-AUC-by-target_RmYN02mono.pdf",sep="")))
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-AUC-by-target_mouse1.6.pdf",sep="")))
 ```
 
-expression-normalized/censored, RmYN02mono
+Same but illustrating delta_normAUC (expression-normalized+censored) by target (each delta noramlized to its wt background), for mouse1.6 sera.
 
-```{r heatmap_DMS_delta-normAUC-by-target_RmYN02mono-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[measurement=="delta_RmYN02mono_normAUC",],
+```{r heatmap_DMS_delta-normAUC-by-target_mouse1.6-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
+p1 <- ggplot(temp[measurement=="delta_mouse1.6_normAUC",],
              aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C"), #if showing blue color
-                       limits=c(-5,2),
-                       values=c(0/7,3/7,4/7,5/7,6/7,7/7),
+  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"), #if showing blue color
+                       limits=c(-5,5),
+                       values=c(0/10,2/10,3.5/10,5/10,6.5/10,8/10,10/10),
                        na.value="gray70")+
   # scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#FFFFFF","#FFFFFF","#FFFFFF"), #if censoring >0 blue
   #                      limits=c(-5,2),
@@ -632,22 +705,152 @@ p1 <- ggplot(temp[measurement=="delta_RmYN02mono_normAUC",],
   theme(strip.text.x = element_text(size = 18))
 
 p1
-invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-normAUC-by-target_RmYN02mono.pdf",sep="")))
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-normAUC-by-target_mouse1.6.pdf",sep="")))
 ```
 
-Let's also output heatmaps by background, comparing the four vaccine formulations.
+
+Next, mouse2.3 sera
+
+```{r heatmap_DMS_AUC-by-target_mouse2.3-sera, fig.width=25,fig.height=12,fig.align="center", dpi=500,dev="png",echo=T}
+p1 <- ggplot(temp[measurement=="mouse2.3_AUC",],aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
+  scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(0,8.505),values=c(0,2/8.505,8.505/8.505),na.value="gray40")+ #effective range 2 to 8.5(8.505)
+  #scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(5,12),values=c(0,1/7,7/7),na.value="yellow")+ #three notches in case I want to 'censor' closer to the 5 boundary condition
+  #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
+  labs(x="",y="")+theme_classic(base_size=9)+
+  coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
+  facet_wrap(~target,nrow=6)+
+  guides(y.sec=guide_axis_label_trans())+
+  geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
+  theme(strip.text.x = element_text(size = 18))
+
+p1
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_AUC-by-target_mouse2.3.pdf",sep="")))
+```
+
+Same but illustrating delta_AUC by target (each delta noramlized to its wt background), for mouse2.3 sera.
+
+```{r heatmap_DMS_delta-AUC-by-target_mouse2.3-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
+p1 <- ggplot(temp[measurement=="delta_mouse2.3_AUC",],aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
+  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"),
+                       limits=c(-8.5,4.5),
+                       values=c(0/13,2.5/13,5.5/13,8.5/13,9.5/13,10.5/13, 13/13),
+                       na.value="gray70")+
+  #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
+  labs(x="",y="")+theme_classic(base_size=9)+
+  coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
+  facet_wrap(~target,nrow=6)+
+  guides(y.sec=guide_axis_label_trans())+
+  geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
+  theme(strip.text.x = element_text(size = 18))
+
+p1
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-AUC-by-target_mouse2.3.pdf",sep="")))
+```
+
+Same but illustrating delta_normAUC (expression-normalized+censored) by target (each delta noramlized to its wt background), for mouse2.3 sera.
+
+```{r heatmap_DMS_delta-normAUC-by-target_mouse2.3-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
+p1 <- ggplot(temp[measurement=="delta_mouse2.3_normAUC",],
+             aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
+  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"), #if showing blue color
+                       limits=c(-5,5),
+                       values=c(0/10,2/10,3.5/10,5/10,6.5/10,8/10,10/10),
+                       na.value="gray70")+
+  # scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#FFFFFF","#FFFFFF","#FFFFFF"), #if censoring >0 blue
+  #                      limits=c(-5,2),
+  #                      values=c(0/7,3/7,4/7,5/7,5.5/7,6/7, 7/7),
+  #                      na.value="gray70")+
+  #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
+  labs(x="",y="")+theme_classic(base_size=9)+
+  coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
+  facet_wrap(~target,nrow=6)+
+  guides(y.sec=guide_axis_label_trans())+
+  geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
+  theme(strip.text.x = element_text(size = 18))
+
+p1
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-normAUC-by-target_mouse2.3.pdf",sep="")))
+```
+
+Next, mouse2.6 sera
+
+```{r heatmap_DMS_AUC-by-target_mouse2.6-sera, fig.width=25,fig.height=12,fig.align="center", dpi=500,dev="png",echo=T}
+p1 <- ggplot(temp[measurement=="mouse2.6_AUC",],aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
+  scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(0,8.505),values=c(0,2/8.505,8.505/8.505),na.value="gray40")+ #effective range 2 to 8.5(8.505)
+  #scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(5,12),values=c(0,1/7,7/7),na.value="yellow")+ #three notches in case I want to 'censor' closer to the 5 boundary condition
+  #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
+  labs(x="",y="")+theme_classic(base_size=9)+
+  coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
+  facet_wrap(~target,nrow=6)+
+  guides(y.sec=guide_axis_label_trans())+
+  geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
+  theme(strip.text.x = element_text(size = 18))
+
+p1
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_AUC-by-target_mouse2.6.pdf",sep="")))
+```
+
+Same but illustrating delta_AUC by target (each delta noramlized to its wt background), for mouse2.6 sera.
+
+```{r heatmap_DMS_delta-AUC-by-target_mouse2.6-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
+p1 <- ggplot(temp[measurement=="delta_mouse2.6_AUC",],aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
+  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"),
+                       limits=c(-8.5,4.5),
+                       values=c(0/13,2.5/13,5.5/13,8.5/13,9.5/13,10.5/13, 13/13),
+                       na.value="gray70")+
+  #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
+  labs(x="",y="")+theme_classic(base_size=9)+
+  coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
+  facet_wrap(~target,nrow=6)+
+  guides(y.sec=guide_axis_label_trans())+
+  geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
+  theme(strip.text.x = element_text(size = 18))
+
+p1
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-AUC-by-target_mouse2.6.pdf",sep="")))
+```
+
+Same but illustrating delta_normAUC (expression-normalized+censored) by target (each delta noramlized to its wt background), for mouse2.6 sera.
+
+```{r heatmap_DMS_delta-normAUC-by-target_mouse2.6-sera, fig.width=25,fig.height=15,fig.align="center", dpi=500,dev="png",echo=T}
+p1 <- ggplot(temp[measurement=="delta_mouse2.6_normAUC",],
+             aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
+  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"), #if showing blue color
+                       limits=c(-5,5),
+                       values=c(0/10,2/10,3.5/10,5/10,6.5/10,8/10,10/10),
+                       na.value="gray70")+
+  # scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#FFFFFF","#FFFFFF","#FFFFFF"), #if censoring >0 blue
+  #                      limits=c(-5,2),
+  #                      values=c(0/7,3/7,4/7,5/7,5.5/7,6/7, 7/7),
+  #                      na.value="gray70")+
+  #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
+  labs(x="",y="")+theme_classic(base_size=9)+
+  coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
+  facet_wrap(~target,nrow=6)+
+  guides(y.sec=guide_axis_label_trans())+
+  geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
+  theme(strip.text.x = element_text(size = 18))
+
+p1
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-normAUC-by-target_mouse2.6.pdf",sep="")))
+```
+
+Let's also output heatmaps by background, comparing the six vaccine formulations.
 
 For SARS-CoV-2_WH1:
 
-```{r heatmap_DMS_AUC-by-sera_SARS-CoV-2_WH1, fig.width=25,fig.height=10,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[target=="SARS-CoV-2_WH1" & measurement %in% c("tetra_AUC","tri_AUC","SARS2mono_AUC","RmYN02mono_AUC"),], 
+```{r heatmap_DMS_AUC-by-sera_SARS-CoV-2_WH1, fig.width=25,fig.height=18,fig.align="center", dpi=500,dev="png",echo=T}
+temp1 <- temp[measurement %in% c("mouse1.3_AUC","mouse1.4_AUC","mouse1.5_AUC","mouse1.6_AUC","mouse2.3_AUC","mouse2.6_AUC")]
+temp1$measurement <- factor(temp1$measurement,levels=c("mouse1.4_AUC","mouse1.6_AUC","mouse1.3_AUC","mouse1.5_AUC","mouse2.3_AUC","mouse2.6_AUC"))
+
+p1 <- ggplot(temp1[target=="SARS-CoV-2_WH1",], 
              aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#FFFFFF","#003366"),limits=c(0,8.5),na.value="gray70")+
+  scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(0,8.505),values=c(0,2/8.505,8.505/8.505),na.value="gray40")+ #effective range 2 to 8.5(8.505)
   #scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(5,12),values=c(0,1/7,7/7),na.value="yellow")+ #three notches in case I want to 'censor' closer to the 5 boundary condition
   #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
   labs(x="",y="")+theme_classic(base_size=9)+
   coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
-  facet_wrap(~measurement,nrow=4)+
+  facet_wrap(~measurement,nrow=6)+
   guides(y.sec=guide_axis_label_trans())+
   geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
   theme(strip.text.x = element_text(size = 18))
@@ -658,17 +861,20 @@ invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_S
 
 Same but illustrating delta_AUC by sera (each delta noramlized to its wt background), for SARS-CoV-2_WH1
 
-```{r heatmap_DMS_delta-AUC-by-sera_SARS-CoV-2_WH1, fig.width=25,fig.height=10,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[target=="SARS-CoV-2_WH1" & measurement %in% c("delta_tetra_AUC","delta_tri_AUC","delta_SARS2mono_AUC","delta_RmYN02mono_AUC"),], 
+```{r heatmap_DMS_delta-AUC-by-sera_SARS-CoV-2_WH1, fig.width=25,fig.height=18,fig.align="center", dpi=500,dev="png",echo=T}
+temp2 <- temp[measurement %in% c("delta_mouse1.3_AUC","delta_mouse1.4_AUC","delta_mouse1.5_AUC","delta_mouse1.6_AUC","delta_mouse2.3_AUC","delta_mouse2.6_AUC")]
+temp2$measurement <- factor(temp2$measurement,levels=c("delta_mouse1.4_AUC","delta_mouse1.6_AUC","delta_mouse1.3_AUC","delta_mouse1.5_AUC","delta_mouse2.3_AUC","delta_mouse2.6_AUC"))
+
+p1 <- ggplot(temp2[target=="SARS-CoV-2_WH1",], 
              aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
   scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"),
-                       limits=c(-8,2),
-                       values=c(0/10,4/10,6/10,8/10,8.5/10,9/10, 10/10),
+                       limits=c(-8.5,4.5),
+                       values=c(0/13,2.5/13,5.5/13,8.5/13,9.5/13,10.5/13, 13/13),
                        na.value="gray70")+
   #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
   labs(x="",y="")+theme_classic(base_size=9)+
   coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
-  facet_wrap(~measurement,nrow=4)+
+  facet_wrap(~measurement,nrow=6)+
   guides(y.sec=guide_axis_label_trans())+
   geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
   theme(strip.text.x = element_text(size = 18))
@@ -679,12 +885,16 @@ invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_S
 
 Same but illustrating delta_normAUC by sera (expresion-norm/cens, each delta noramlized to its wt background), for SARS-CoV-2_WH1
 
-```{r heatmap_DMS_delta-normAUC-by-sera_SARS-CoV-2_WH1, fig.width=25,fig.height=10,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[target=="SARS-CoV-2_WH1" & measurement %in% c("delta_tetra_normAUC","delta_tri_normAUC","delta_SARS2mono_normAUC","delta_RmYN02mono_normAUC"),], 
+```{r heatmap_DMS_delta-normAUC-by-sera_SARS-CoV-2_WH1, fig.width=25,fig.height=18,fig.align="center", dpi=500,dev="png",echo=T}
+temp3 <- temp[measurement %in% c("delta_mouse1.3_normAUC","delta_mouse1.4_normAUC","delta_mouse1.5_normAUC","delta_mouse1.6_normAUC","delta_mouse2.3_normAUC","delta_mouse2.6_normAUC")]
+temp3$measurement <- factor(temp3$measurement,levels=c("delta_mouse1.4_normAUC","delta_mouse1.6_normAUC","delta_mouse1.3_normAUC","delta_mouse1.5_normAUC","delta_mouse2.3_normAUC","delta_mouse2.6_normAUC"))
+
+
+p1 <- ggplot(temp3[target=="SARS-CoV-2_WH1",], 
              aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C"), #if showing blue color
-                       limits=c(-5,2),
-                       values=c(0/7,3/7,4/7,5/7,6/7,7/7),
+  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"), #if showing blue color
+                       limits=c(-5,5),
+                       values=c(0/10,2/10,3.5/10,5/10,6.5/10,8/10,10/10),
                        na.value="gray70")+
   # scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#FFFFFF","#FFFFFF","#FFFFFF"), #if censoring >0 blue
   #                      limits=c(-5,2),
@@ -693,7 +903,7 @@ p1 <- ggplot(temp[target=="SARS-CoV-2_WH1" & measurement %in% c("delta_tetra_nor
   #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
   labs(x="",y="")+theme_classic(base_size=9)+
   coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
-  facet_wrap(~measurement,nrow=4)+
+  facet_wrap(~measurement,nrow=6)+
   guides(y.sec=guide_axis_label_trans())+
   geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
   theme(strip.text.x = element_text(size = 18))
@@ -702,55 +912,64 @@ p1
 invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-normAUC-by-sera_SARS-CoV-2_WH1.pdf",sep="")))
 ```
 
+For SARS-CoV-2_BA2:
 
-For RshSTT182:
+```{r heatmap_DMS_AUC-by-sera_SARS-CoV-2_BA2, fig.width=25,fig.height=18,fig.align="center", dpi=500,dev="png",echo=T}
+temp1 <- temp[measurement %in% c("mouse1.3_AUC","mouse1.4_AUC","mouse1.5_AUC","mouse1.6_AUC","mouse2.3_AUC","mouse2.6_AUC")]
+temp1$measurement <- factor(temp1$measurement,levels=c("mouse1.4_AUC","mouse1.6_AUC","mouse1.3_AUC","mouse1.5_AUC","mouse2.3_AUC","mouse2.6_AUC"))
 
-```{r heatmap_DMS_AUC-by-sera_RshSTT182, fig.width=25,fig.height=10,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[target=="RshSTT182" & measurement %in% c("tetra_AUC","tri_AUC","SARS2mono_AUC","RmYN02mono_AUC"),], 
+p1 <- ggplot(temp1[target=="SARS-CoV-2_BA2",], 
              aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#FFFFFF","#003366"),limits=c(0,8.5),na.value="gray70")+
+  scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(0,8.505),values=c(0,2/8.505,8.505/8.505),na.value="gray40")+ #effective range 2 to 8.5(8.505)
   #scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(5,12),values=c(0,1/7,7/7),na.value="yellow")+ #three notches in case I want to 'censor' closer to the 5 boundary condition
   #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
   labs(x="",y="")+theme_classic(base_size=9)+
   coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
-  facet_wrap(~measurement,nrow=4)+
+  facet_wrap(~measurement,nrow=6)+
   guides(y.sec=guide_axis_label_trans())+
   geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
   theme(strip.text.x = element_text(size = 18))
 
 p1
-invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_AUC-by-sera_RshSTT182.pdf",sep="")))
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_AUC-by-sera_SARS-CoV-2_BA2.pdf",sep="")))
 ```
 
-Same but illustrating delta_AUC by sera (each delta noramlized to its wt background), for RshSTT182
+Same but illustrating delta_AUC by sera (each delta noramlized to its wt background), for SARS-CoV-2_BA2
 
-```{r heatmap_DMS_delta-AUC-by-sera_RshSTT182, fig.width=25,fig.height=10,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[target=="RshSTT182" & measurement %in% c("delta_tetra_AUC","delta_tri_AUC","delta_SARS2mono_AUC","delta_RmYN02mono_AUC"),], 
+```{r heatmap_DMS_delta-AUC-by-sera_SARS-CoV-2_BA2, fig.width=25,fig.height=18,fig.align="center", dpi=500,dev="png",echo=T}
+temp2 <- temp[measurement %in% c("delta_mouse1.3_AUC","delta_mouse1.4_AUC","delta_mouse1.5_AUC","delta_mouse1.6_AUC","delta_mouse2.3_AUC","delta_mouse2.6_AUC")]
+temp2$measurement <- factor(temp2$measurement,levels=c("delta_mouse1.4_AUC","delta_mouse1.6_AUC","delta_mouse1.3_AUC","delta_mouse1.5_AUC","delta_mouse2.3_AUC","delta_mouse2.6_AUC"))
+
+p1 <- ggplot(temp2[target=="SARS-CoV-2_BA2",], 
              aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
   scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"),
-                       limits=c(-8,2),
-                       values=c(0/10,4/10,6/10,8/10,8.5/10,9/10, 10/10),
+                       limits=c(-8.5,4.5),
+                       values=c(0/13,2.5/13,5.5/13,8.5/13,9.5/13,10.5/13, 13/13),
                        na.value="gray70")+
   #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
   labs(x="",y="")+theme_classic(base_size=9)+
   coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
-  facet_wrap(~measurement,nrow=4)+
+  facet_wrap(~measurement,nrow=6)+
   guides(y.sec=guide_axis_label_trans())+
   geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
   theme(strip.text.x = element_text(size = 18))
 
 p1
-invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-AUC-by-sera_RshSTT182.pdf",sep="")))
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-AUC-by-sera_SARS-CoV-2_BA2.pdf",sep="")))
 ```
 
-Same but illustrating delta_normAUC by sera (expresion-norm/cens, each delta noramlized to its wt background), for RshSTT182
+Same but illustrating delta_normAUC by sera (expresion-norm/cens, each delta noramlized to its wt background), for SARS-CoV-2_BA2
 
-```{r heatmap_DMS_delta-normAUC-by-sera_RshSTT182, fig.width=25,fig.height=10,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[target=="RshSTT182" & measurement %in% c("delta_tetra_normAUC","delta_tri_normAUC","delta_SARS2mono_normAUC","delta_RmYN02mono_normAUC"),], 
+```{r heatmap_DMS_delta-normAUC-by-sera_SARS-CoV-2_BA2, fig.width=25,fig.height=18,fig.align="center", dpi=500,dev="png",echo=T}
+temp3 <- temp[measurement %in% c("delta_mouse1.3_normAUC","delta_mouse1.4_normAUC","delta_mouse1.5_normAUC","delta_mouse1.6_normAUC","delta_mouse2.3_normAUC","delta_mouse2.6_normAUC")]
+temp3$measurement <- factor(temp3$measurement,levels=c("delta_mouse1.4_normAUC","delta_mouse1.6_normAUC","delta_mouse1.3_normAUC","delta_mouse1.5_normAUC","delta_mouse2.3_normAUC","delta_mouse2.6_normAUC"))
+
+
+p1 <- ggplot(temp3[target=="SARS-CoV-2_BA2",], 
              aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C"), #if showing blue color
-                       limits=c(-5,2),
-                       values=c(0/7,3/7,4/7,5/7,6/7,7/7),
+  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"), #if showing blue color
+                       limits=c(-5,5),
+                       values=c(0/10,2/10,3.5/10,5/10,6.5/10,8/10,10/10),
                        na.value="gray70")+
   # scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#FFFFFF","#FFFFFF","#FFFFFF"), #if censoring >0 blue
   #                      limits=c(-5,2),
@@ -759,26 +978,28 @@ p1 <- ggplot(temp[target=="RshSTT182" & measurement %in% c("delta_tetra_normAUC"
   #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
   labs(x="",y="")+theme_classic(base_size=9)+
   coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
-  facet_wrap(~measurement,nrow=4)+
+  facet_wrap(~measurement,nrow=6)+
   guides(y.sec=guide_axis_label_trans())+
   geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
   theme(strip.text.x = element_text(size = 18))
 
 p1
-invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-normAUC-by-sera_RshSTT182.pdf",sep="")))
+invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-normAUC-by-sera_SARS-CoV-2_BA2.pdf",sep="")))
 ```
-
 For SARS-CoV-1_Urbani:
 
-```{r heatmap_DMS_AUC-by-sera_SARS-CoV-1_Urbani, fig.width=25,fig.height=10,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[target=="SARS-CoV-1_Urbani" & measurement %in% c("tetra_AUC","tri_AUC","SARS2mono_AUC","RmYN02mono_AUC"),], 
+```{r heatmap_DMS_AUC-by-sera_SARS-CoV-1_Urbani, fig.width=25,fig.height=18,fig.align="center", dpi=500,dev="png",echo=T}
+temp1 <- temp[measurement %in% c("mouse1.3_AUC","mouse1.4_AUC","mouse1.5_AUC","mouse1.6_AUC","mouse2.3_AUC","mouse2.6_AUC")]
+temp1$measurement <- factor(temp1$measurement,levels=c("mouse1.4_AUC","mouse1.6_AUC","mouse1.3_AUC","mouse1.5_AUC","mouse2.3_AUC","mouse2.6_AUC"))
+
+p1 <- ggplot(temp1[target=="SARS-CoV-1_Urbani",], 
              aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#FFFFFF","#003366"),limits=c(0,8.5),na.value="gray70")+
+  scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(0,8.505),values=c(0,2/8.505,8.505/8.505),na.value="gray40")+ #effective range 2 to 8.5(8.505)
   #scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(5,12),values=c(0,1/7,7/7),na.value="yellow")+ #three notches in case I want to 'censor' closer to the 5 boundary condition
   #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
   labs(x="",y="")+theme_classic(base_size=9)+
   coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
-  facet_wrap(~measurement,nrow=4)+
+  facet_wrap(~measurement,nrow=6)+
   guides(y.sec=guide_axis_label_trans())+
   geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
   theme(strip.text.x = element_text(size = 18))
@@ -789,17 +1010,20 @@ invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_S
 
 Same but illustrating delta_AUC by sera (each delta noramlized to its wt background), for SARS-CoV-1_Urbani
 
-```{r heatmap_DMS_delta-AUC-by-sera_SARS-CoV-1_Urbani, fig.width=25,fig.height=10,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[target=="SARS-CoV-1_Urbani" & measurement %in% c("delta_tetra_AUC","delta_tri_AUC","delta_SARS2mono_AUC","delta_RmYN02mono_AUC"),], 
+```{r heatmap_DMS_delta-AUC-by-sera_SARS-CoV-1_Urbani, fig.width=25,fig.height=18,fig.align="center", dpi=500,dev="png",echo=T}
+temp2 <- temp[measurement %in% c("delta_mouse1.3_AUC","delta_mouse1.4_AUC","delta_mouse1.5_AUC","delta_mouse1.6_AUC","delta_mouse2.3_AUC","delta_mouse2.6_AUC")]
+temp2$measurement <- factor(temp2$measurement,levels=c("delta_mouse1.4_AUC","delta_mouse1.6_AUC","delta_mouse1.3_AUC","delta_mouse1.5_AUC","delta_mouse2.3_AUC","delta_mouse2.6_AUC"))
+
+p1 <- ggplot(temp2[target=="SARS-CoV-1_Urbani",], 
              aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
   scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"),
-                       limits=c(-8,2),
-                       values=c(0/10,4/10,6/10,8/10,8.5/10,9/10, 10/10),
+                       limits=c(-8.5,4.5),
+                       values=c(0/13,2.5/13,5.5/13,8.5/13,9.5/13,10.5/13, 13/13),
                        na.value="gray70")+
   #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
   labs(x="",y="")+theme_classic(base_size=9)+
   coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
-  facet_wrap(~measurement,nrow=4)+
+  facet_wrap(~measurement,nrow=6)+
   guides(y.sec=guide_axis_label_trans())+
   geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
   theme(strip.text.x = element_text(size = 18))
@@ -810,12 +1034,16 @@ invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_S
 
 Same but illustrating delta_normAUC by sera (expresion-norm/cens, each delta noramlized to its wt background), for SARS-CoV-1_Urbani
 
-```{r heatmap_DMS_delta-normAUC-by-sera_SARS-CoV-1_Urbani, fig.width=25,fig.height=10,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[target=="SARS-CoV-1_Urbani" & measurement %in% c("delta_tetra_normAUC","delta_tri_normAUC","delta_SARS2mono_normAUC","delta_RmYN02mono_normAUC"),], 
+```{r heatmap_DMS_delta-normAUC-by-sera_SARS-CoV-1_Urbani, fig.width=25,fig.height=18,fig.align="center", dpi=500,dev="png",echo=T}
+temp3 <- temp[measurement %in% c("delta_mouse1.3_normAUC","delta_mouse1.4_normAUC","delta_mouse1.5_normAUC","delta_mouse1.6_normAUC","delta_mouse2.3_normAUC","delta_mouse2.6_normAUC")]
+temp3$measurement <- factor(temp3$measurement,levels=c("delta_mouse1.4_normAUC","delta_mouse1.6_normAUC","delta_mouse1.3_normAUC","delta_mouse1.5_normAUC","delta_mouse2.3_normAUC","delta_mouse2.6_normAUC"))
+
+
+p1 <- ggplot(temp3[target=="SARS-CoV-1_Urbani",], 
              aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C"), #if showing blue color
-                       limits=c(-5,2),
-                       values=c(0/7,3/7,4/7,5/7,6/7,7/7),
+  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"), #if showing blue color
+                       limits=c(-5,5),
+                       values=c(0/10,2/10,3.5/10,5/10,6.5/10,8/10,10/10),
                        na.value="gray70")+
   # scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#FFFFFF","#FFFFFF","#FFFFFF"), #if censoring >0 blue
   #                      limits=c(-5,2),
@@ -824,7 +1052,7 @@ p1 <- ggplot(temp[target=="SARS-CoV-1_Urbani" & measurement %in% c("delta_tetra_
   #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
   labs(x="",y="")+theme_classic(base_size=9)+
   coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
-  facet_wrap(~measurement,nrow=4)+
+  facet_wrap(~measurement,nrow=6)+
   guides(y.sec=guide_axis_label_trans())+
   geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
   theme(strip.text.x = element_text(size = 18))
@@ -833,81 +1061,20 @@ p1
 invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-normAUC-by-sera_SARS-CoV-1_Urbani.pdf",sep="")))
 ```
 
-For RsYN04:
-
-```{r heatmap_DMS_AUC-by-sera_RsYN04, fig.width=25,fig.height=10,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[target=="RsYN04" & measurement %in% c("tetra_AUC","tri_AUC","SARS2mono_AUC","RmYN02mono_AUC"),], 
-             aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#FFFFFF","#003366"),limits=c(0,8.5),na.value="gray70")+
-  #scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(5,12),values=c(0,1/7,7/7),na.value="yellow")+ #three notches in case I want to 'censor' closer to the 5 boundary condition
-  #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
-  labs(x="",y="")+theme_classic(base_size=9)+
-  coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
-  facet_wrap(~measurement,nrow=4)+
-  guides(y.sec=guide_axis_label_trans())+
-  geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
-  theme(strip.text.x = element_text(size = 18))
-
-p1
-invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_AUC-by-sera_RsYN04.pdf",sep="")))
-```
-
-Same but illustrating delta_AUC by sera (each delta noramlized to its wt background), for RsYN04
-
-```{r heatmap_DMS_delta-AUC-by-sera_RsYN04, fig.width=25,fig.height=10,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[target=="RsYN04" & measurement %in% c("delta_tetra_AUC","delta_tri_AUC","delta_SARS2mono_AUC","delta_RmYN02mono_AUC"),], 
-             aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"),
-                       limits=c(-8,2),
-                       values=c(0/10,4/10,6/10,8/10,8.5/10,9/10, 10/10),
-                       na.value="gray70")+
-  #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
-  labs(x="",y="")+theme_classic(base_size=9)+
-  coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
-  facet_wrap(~measurement,nrow=4)+
-  guides(y.sec=guide_axis_label_trans())+
-  geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
-  theme(strip.text.x = element_text(size = 18))
-
-p1
-invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-AUC-by-sera_RsYN04.pdf",sep="")))
-```
-
-Same but illustrating delta_normAUC by sera (expresion-norm/cens, each delta noramlized to its wt background), for RsYN04
-
-```{r heatmap_DMS_delta-normAUC-by-sera_RsYN04, fig.width=25,fig.height=10,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[target=="RsYN04" & measurement %in% c("delta_tetra_normAUC","delta_tri_normAUC","delta_SARS2mono_normAUC","delta_RmYN02mono_normAUC"),], 
-             aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C"), #if showing blue color
-                       limits=c(-5,2),
-                       values=c(0/7,3/7,4/7,5/7,6/7,7/7),
-                       na.value="gray70")+
-  # scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#FFFFFF","#FFFFFF","#FFFFFF"), #if censoring >0 blue
-  #                      limits=c(-5,2),
-  #                      values=c(0/7,3/7,4/7,5/7,5.5/7,6/7, 7/7),
-  #                      na.value="gray70")+
-  #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
-  labs(x="",y="")+theme_classic(base_size=9)+
-  coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
-  facet_wrap(~measurement,nrow=4)+
-  guides(y.sec=guide_axis_label_trans())+
-  geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
-  theme(strip.text.x = element_text(size = 18))
-
-p1
-invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-normAUC-by-sera_RsYN04.pdf",sep="")))
-```
 For PRD-0038:
 
-```{r heatmap_DMS_AUC-by-sera_PRD-0038, fig.width=25,fig.height=10,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[target=="PRD-0038" & measurement %in% c("tetra_AUC","tri_AUC","SARS2mono_AUC","RmYN02mono_AUC"),], 
+```{r heatmap_DMS_AUC-by-sera_PRD-0038, fig.width=25,fig.height=18,fig.align="center", dpi=500,dev="png",echo=T}
+temp1 <- temp[measurement %in% c("mouse1.3_AUC","mouse1.4_AUC","mouse1.5_AUC","mouse1.6_AUC","mouse2.3_AUC","mouse2.6_AUC")]
+temp1$measurement <- factor(temp1$measurement,levels=c("mouse1.4_AUC","mouse1.6_AUC","mouse1.3_AUC","mouse1.5_AUC","mouse2.3_AUC","mouse2.6_AUC"))
+
+p1 <- ggplot(temp1[target=="PRD-0038",], 
              aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#FFFFFF","#003366"),limits=c(0,8.5),na.value="gray70")+
+  scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(0,8.505),values=c(0,2/8.505,8.505/8.505),na.value="gray40")+ #effective range 2 to 8.5(8.505)
   #scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(5,12),values=c(0,1/7,7/7),na.value="yellow")+ #three notches in case I want to 'censor' closer to the 5 boundary condition
   #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
   labs(x="",y="")+theme_classic(base_size=9)+
   coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
-  facet_wrap(~measurement,nrow=4)+
+  facet_wrap(~measurement,nrow=6)+
   guides(y.sec=guide_axis_label_trans())+
   geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
   theme(strip.text.x = element_text(size = 18))
@@ -918,17 +1085,20 @@ invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_S
 
 Same but illustrating delta_AUC by sera (each delta noramlized to its wt background), for PRD-0038
 
-```{r heatmap_DMS_delta-AUC-by-sera_PRD-0038, fig.width=25,fig.height=10,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[target=="PRD-0038" & measurement %in% c("delta_tetra_AUC","delta_tri_AUC","delta_SARS2mono_AUC","delta_RmYN02mono_AUC"),], 
+```{r heatmap_DMS_delta-AUC-by-sera_PRD-0038, fig.width=25,fig.height=18,fig.align="center", dpi=500,dev="png",echo=T}
+temp2 <- temp[measurement %in% c("delta_mouse1.3_AUC","delta_mouse1.4_AUC","delta_mouse1.5_AUC","delta_mouse1.6_AUC","delta_mouse2.3_AUC","delta_mouse2.6_AUC")]
+temp2$measurement <- factor(temp2$measurement,levels=c("delta_mouse1.4_AUC","delta_mouse1.6_AUC","delta_mouse1.3_AUC","delta_mouse1.5_AUC","delta_mouse2.3_AUC","delta_mouse2.6_AUC"))
+
+p1 <- ggplot(temp2[target=="PRD-0038",], 
              aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
   scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"),
-                       limits=c(-8,2),
-                       values=c(0/10,4/10,6/10,8/10,8.5/10,9/10, 10/10),
+                       limits=c(-8.5,4.5),
+                       values=c(0/13,2.5/13,5.5/13,8.5/13,9.5/13,10.5/13, 13/13),
                        na.value="gray70")+
   #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
   labs(x="",y="")+theme_classic(base_size=9)+
   coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
-  facet_wrap(~measurement,nrow=4)+
+  facet_wrap(~measurement,nrow=6)+
   guides(y.sec=guide_axis_label_trans())+
   geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
   theme(strip.text.x = element_text(size = 18))
@@ -939,12 +1109,16 @@ invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_S
 
 Same but illustrating delta_normAUC by sera (expresion-norm/cens, each delta noramlized to its wt background), for PRD-0038
 
-```{r heatmap_DMS_delta-normAUC-by-sera_PRD-0038, fig.width=25,fig.height=10,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[target=="PRD-0038" & measurement %in% c("delta_tetra_normAUC","delta_tri_normAUC","delta_SARS2mono_normAUC","delta_RmYN02mono_normAUC"),], 
+```{r heatmap_DMS_delta-normAUC-by-sera_PRD-0038, fig.width=25,fig.height=18,fig.align="center", dpi=500,dev="png",echo=T}
+temp3 <- temp[measurement %in% c("delta_mouse1.3_normAUC","delta_mouse1.4_normAUC","delta_mouse1.5_normAUC","delta_mouse1.6_normAUC","delta_mouse2.3_normAUC","delta_mouse2.6_normAUC")]
+temp3$measurement <- factor(temp3$measurement,levels=c("delta_mouse1.4_normAUC","delta_mouse1.6_normAUC","delta_mouse1.3_normAUC","delta_mouse1.5_normAUC","delta_mouse2.3_normAUC","delta_mouse2.6_normAUC"))
+
+
+p1 <- ggplot(temp3[target=="PRD-0038",], 
              aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C"), #if showing blue color
-                       limits=c(-5,2),
-                       values=c(0/7,3/7,4/7,5/7,6/7,7/7),
+  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"), #if showing blue color
+                       limits=c(-5,5),
+                       values=c(0/10,2/10,3.5/10,5/10,6.5/10,8/10,10/10),
                        na.value="gray70")+
   # scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#FFFFFF","#FFFFFF","#FFFFFF"), #if censoring >0 blue
   #                      limits=c(-5,2),
@@ -953,7 +1127,7 @@ p1 <- ggplot(temp[target=="PRD-0038" & measurement %in% c("delta_tetra_normAUC",
   #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
   labs(x="",y="")+theme_classic(base_size=9)+
   coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
-  facet_wrap(~measurement,nrow=4)+
+  facet_wrap(~measurement,nrow=6)+
   guides(y.sec=guide_axis_label_trans())+
   geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
   theme(strip.text.x = element_text(size = 18))
@@ -961,82 +1135,20 @@ p1 <- ggplot(temp[target=="PRD-0038" & measurement %in% c("delta_tetra_normAUC",
 p1
 invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-normAUC-by-sera_PRD-0038.pdf",sep="")))
 ```
-For RmYN02:
-
-```{r heatmap_DMS_AUC-by-sera_RmYN02, fig.width=25,fig.height=10,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[target=="RmYN02" & measurement %in% c("tetra_AUC","tri_AUC","SARS2mono_AUC","RmYN02mono_AUC"),], 
-             aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#FFFFFF","#003366"),limits=c(0,8.5),na.value="gray70")+
-  #scale_fill_gradientn(colours=c("#FFFFFF","#FFFFFF","#003366"),limits=c(5,12),values=c(0,1/7,7/7),na.value="yellow")+ #three notches in case I want to 'censor' closer to the 5 boundary condition
-  #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
-  labs(x="",y="")+theme_classic(base_size=9)+
-  coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
-  facet_wrap(~measurement,nrow=4)+
-  guides(y.sec=guide_axis_label_trans())+
-  geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
-  theme(strip.text.x = element_text(size = 18))
-
-p1
-invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_AUC-by-sera_RmYN02.pdf",sep="")))
-```
-
-Same but illustrating delta_AUC by sera (each delta noramlized to its wt background), for RmYN02
-
-```{r heatmap_DMS_delta-AUC-by-sera_RmYN02, fig.width=25,fig.height=10,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[target=="RmYN02" & measurement %in% c("delta_tetra_AUC","delta_tri_AUC","delta_SARS2mono_AUC","delta_RmYN02mono_AUC"),], 
-             aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C","#383C6C"),
-                       limits=c(-8,2),
-                       values=c(0/10,4/10,6/10,8/10,8.5/10,9/10, 10/10),
-                       na.value="gray70")+
-  #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
-  labs(x="",y="")+theme_classic(base_size=9)+
-  coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
-  facet_wrap(~measurement,nrow=4)+
-  guides(y.sec=guide_axis_label_trans())+
-  geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
-  theme(strip.text.x = element_text(size = 18))
-
-p1
-invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-AUC-by-sera_RmYN02.pdf",sep="")))
-```
-
-Same but illustrating delta_normAUC by sera (expresion-norm/cens, each delta noramlized to its wt background), for RmYN02
-
-```{r heatmap_DMS_delta-normAUC-by-sera_RmYN02, fig.width=25,fig.height=10,fig.align="center", dpi=500,dev="png",echo=T}
-p1 <- ggplot(temp[target=="RmYN02" & measurement %in% c("delta_tetra_normAUC","delta_tri_normAUC","delta_SARS2mono_normAUC","delta_RmYN02mono_normAUC"),], 
-             aes(site_SARS2,mutant))+geom_tile(aes(fill=value),color="black",lwd=0.1)+
-  scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#7378B9","#383C6C"), #if showing blue color
-                       limits=c(-5,2),
-                       values=c(0/7,3/7,4/7,5/7,6/7,7/7),
-                       na.value="gray70")+
-  # scale_fill_gradientn(colours=c("#A94E35","#A94E35","#F48365","#FFFFFF","#FFFFFF","#FFFFFF","#FFFFFF"), #if censoring >0 blue
-  #                      limits=c(-5,2),
-  #                      values=c(0/7,3/7,4/7,5/7,5.5/7,6/7, 7/7),
-  #                      na.value="gray70")+
-  #scale_x_continuous(expand=c(0,0),breaks=c(331,seq(335,530,by=5)))+
-  labs(x="",y="")+theme_classic(base_size=9)+
-  coord_equal()+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.6,face="bold",size=10),axis.text.y=element_text(face="bold",size=10))+
-  facet_wrap(~measurement,nrow=4)+
-  guides(y.sec=guide_axis_label_trans())+
-  geom_text(aes(label=wildtype_indicator),size=2,color="gray10")+
-  theme(strip.text.x = element_text(size = 18))
-
-p1
-invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib40_heatmap_SSM_delta-normAUC-by-sera_RmYN02.pdf",sep="")))
-```
 
 Save output files.
 
 ```{r outputs}
 dt_mutant[,.(target,wildtype,site,site_SARS2,mutant,mutation,mutation_SARS2,
-            tetra_AUC,sd_tetra_AUC,delta_tetra_AUC,delta_tetra_normAUC,n_bc_tetra_AUC,
-            tri_AUC,sd_tri_AUC,delta_tri_AUC,delta_tri_normAUC,n_bc_tri_AUC,
-            SARS2mono_AUC,sd_SARS2mono_AUC,delta_SARS2mono_AUC,delta_SARS2mono_normAUC,n_bc_SARS2mono_AUC,
-            RmYN02mono_AUC,sd_RmYN02mono_AUC,delta_RmYN02mono_AUC,delta_RmYN02mono_normAUC,n_bc_RmYN02mono_AUC,
+            mouse1.3_AUC,sd_mouse1.3_AUC,delta_mouse1.3_AUC,delta_mouse1.3_normAUC,n_bc_mouse1.3_AUC,
+            mouse1.4_AUC,sd_mouse1.4_AUC,delta_mouse1.4_AUC,delta_mouse1.4_normAUC,n_bc_mouse1.4_AUC,
+            mouse1.5_AUC,sd_mouse1.5_AUC,delta_mouse1.5_AUC,delta_mouse1.5_normAUC,n_bc_mouse1.5_AUC,
+            mouse1.6_AUC,sd_mouse1.6_AUC,delta_mouse1.6_AUC,delta_mouse1.6_normAUC,n_bc_mouse1.6_AUC,
+            mouse2.3_AUC,sd_mouse2.3_AUC,delta_mouse2.3_AUC,delta_mouse2.3_normAUC,n_bc_mouse2.3_AUC,
+            mouse2.6_AUC,sd_mouse2.6_AUC,delta_mouse2.6_AUC,delta_mouse2.6_normAUC,n_bc_mouse2.6_AUC,
             expr,delta_expr)] %>%
   mutate_if(is.numeric, round, digits=5) %>%
-  write.csv(file=config$final_variant_scores_lib40_file, row.names=F,quote=F)
+  write.csv(file=config$final_variant_scores_dms_file, row.names=F,quote=F)
 ```
 
 
