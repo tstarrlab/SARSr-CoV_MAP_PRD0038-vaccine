@@ -111,7 +111,7 @@ rule analyze_epitopes:
         md='results/summary/analyze_epitopes.md',
         md_files=directory('results/summary/analyze_epitopes_files')
     envmodules:
-        'R/3.6.2-foss-2019b'
+        'R/4.1.2-foss-2021b'
     params:
         nb='analyze_epitopes.Rmd',
         md='analyze_epitopes.md',
@@ -134,7 +134,7 @@ rule collapse_bcs_SARSr_DMS:
         md='results/summary/collapse_barcodes_SARSr-DMS.md',
         md_files=directory('results/summary/collapse_barcodes_SARSr-DMS_files')
     envmodules:
-        'R/3.6.2-foss-2019b'
+        'R/4.1.2-foss-2021b'
     params:
         nb='collapse_barcodes_SARSr-DMS.Rmd',
         md='collapse_barcodes_SARSr-DMS.md',
@@ -155,7 +155,7 @@ rule collapse_bcs_SARSr_wts:
         md='results/summary/collapse_barcodes_SARSr-wts.md',
         md_files=directory('results/summary/collapse_barcodes_SARSr-wts_files')
     envmodules:
-        'R/3.6.2-foss-2019b'
+        'R/4.1.2-foss-2021b'
     params:
         nb='collapse_barcodes_SARSr-wts.Rmd',
         md='collapse_barcodes_SARSr-wts.md',
@@ -177,7 +177,7 @@ rule calculate_bc_sera_AUC:
         md='results/summary/compute_AUC.md',
         md_files=directory('results/summary/compute_AUC_files')
     envmodules:
-        'R/3.6.2-foss-2019b'
+        'R/4.1.2-foss-2021b'
     params:
         nb='compute_AUC.Rmd',
         md='compute_AUC.md',
