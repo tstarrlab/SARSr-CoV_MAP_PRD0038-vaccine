@@ -46,12 +46,12 @@ Session info for reproducing environment:
 sessionInfo()
 ```
 
-    ## R version 3.6.2 (2019-12-12)
+    ## R version 4.1.2 (2021-11-01)
     ## Platform: x86_64-pc-linux-gnu (64-bit)
     ## Running under: Ubuntu 18.04.6 LTS
     ## 
     ## Matrix products: default
-    ## BLAS/LAPACK: /app/software/OpenBLAS/0.3.7-GCC-8.3.0/lib/libopenblas_haswellp-r0.3.7.so
+    ## BLAS/LAPACK: /app/software/FlexiBLAS/3.0.4-GCC-11.2.0/lib/libflexiblas.so.3.0
     ## 
     ## locale:
     ##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
@@ -65,24 +65,25 @@ sessionInfo()
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ##  [1] gridExtra_2.3     forcats_0.4.0     stringr_1.4.0     dplyr_0.8.3      
-    ##  [5] purrr_0.3.3       readr_1.3.1       tidyr_1.0.0       tibble_3.0.2     
-    ##  [9] ggplot2_3.3.0     tidyverse_1.3.0   data.table_1.12.8 yaml_2.2.0       
-    ## [13] knitr_1.26       
+    ##  [1] gridExtra_2.3     forcats_0.5.1     stringr_1.4.0     dplyr_1.0.7      
+    ##  [5] purrr_0.3.4       readr_2.0.2       tidyr_1.1.4       tibble_3.1.5     
+    ##  [9] ggplot2_3.3.5     tidyverse_1.3.1   data.table_1.14.2 yaml_2.2.1       
+    ## [13] knitr_1.36       
     ## 
     ## loaded via a namespace (and not attached):
-    ##  [1] Rcpp_1.0.3       cellranger_1.1.0 pillar_1.4.5     compiler_3.6.2  
-    ##  [5] dbplyr_1.4.2     tools_3.6.2      digest_0.6.23    lubridate_1.7.4 
-    ##  [9] jsonlite_1.6     evaluate_0.14    lifecycle_0.2.0  gtable_0.3.0    
-    ## [13] pkgconfig_2.0.3  rlang_0.4.7      reprex_0.3.0     cli_2.0.0       
-    ## [17] rstudioapi_0.10  DBI_1.1.0        haven_2.2.0      xfun_0.11       
-    ## [21] withr_2.1.2      xml2_1.3.3       httr_1.4.1       fs_1.3.1        
-    ## [25] hms_0.5.2        generics_0.0.2   vctrs_0.3.1      grid_3.6.2      
-    ## [29] tidyselect_1.1.0 glue_1.3.1       R6_2.4.1         fansi_0.4.0     
-    ## [33] readxl_1.3.1     rmarkdown_2.0    modelr_0.1.5     magrittr_1.5    
-    ## [37] backports_1.1.5  scales_1.1.0     ellipsis_0.3.0   htmltools_0.4.0 
-    ## [41] rvest_0.3.5      assertthat_0.2.1 colorspace_1.4-1 stringi_1.4.3   
-    ## [45] munsell_0.5.0    broom_0.7.0      crayon_1.3.4
+    ##  [1] tidyselect_1.1.1 xfun_0.27        haven_2.4.3      colorspace_2.0-2
+    ##  [5] vctrs_0.3.8      generics_0.1.1   htmltools_0.5.2  utf8_1.2.2      
+    ##  [9] rlang_0.4.12     pillar_1.6.4     glue_1.4.2       withr_2.4.2     
+    ## [13] DBI_1.1.1        dbplyr_2.1.1     modelr_0.1.8     readxl_1.3.1    
+    ## [17] lifecycle_1.0.1  munsell_0.5.0    gtable_0.3.0     cellranger_1.1.0
+    ## [21] rvest_1.0.2      evaluate_0.14    tzdb_0.2.0       fastmap_1.1.0   
+    ## [25] fansi_0.5.0      broom_0.7.10     Rcpp_1.0.7       scales_1.1.1    
+    ## [29] backports_1.3.0  jsonlite_1.8.4   fs_1.5.0         hms_1.1.1       
+    ## [33] digest_0.6.28    stringi_1.7.5    grid_4.1.2       cli_3.1.0       
+    ## [37] tools_4.1.2      magrittr_2.0.1   crayon_1.4.2     pkgconfig_2.0.3 
+    ## [41] ellipsis_0.3.2   xml2_1.3.3       reprex_2.0.1     lubridate_1.8.0 
+    ## [45] rstudioapi_0.13  assertthat_0.2.1 rmarkdown_2.11   httr_1.4.4      
+    ## [49] R6_2.5.1         compiler_4.1.2
 
 ## Setup
 
@@ -147,6 +148,8 @@ p6 <- ggplot(dt[!is.na(mouse2.6_AUC),],aes(x=target,y=mouse2.6_AUC))+
 grid.arrange(p1,p2,p3,p4,p5,p6,ncol=1)
 ```
 
+    ## Warning: Groups with fewer than two data points have been dropped.
+
 <img src="collapse_barcodes_SARSr-wts_files/figure-gfm/unfiltered_AUCs-1.png" style="display: block; margin: auto;" />
 
 Let’s add a variable that flags the top and bottom 2.5% of expression
@@ -204,6 +207,10 @@ p6 <- ggplot(dt[!is.na(mouse2.6_AUC) & mouse2.6_AUC >= mouse2.6_censor_lower & m
 
 grid.arrange(p1,p2,p3,p4,p5,p6,ncol=1)
 ```
+
+    ## Warning: Groups with fewer than two data points have been dropped.
+
+    ## Warning: Groups with fewer than two data points have been dropped.
 
 <img src="collapse_barcodes_SARSr-wts_files/figure-gfm/censor_2.5_AUCs-1.png" style="display: block; margin: auto;" />
 

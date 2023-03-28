@@ -150,7 +150,7 @@ invisible(dev.print(pdf, paste(config$final_variant_scores_dir,"/lib47_vioplots_
 
 Calculate the mean per variant, the standard deviation, and the number of (post-filter) barcodes on which a variant score was determined
 
-````{r calculate_mean_scores}
+```{r calculate_mean_scores, echo=T, fig.width=10, fig.height=20, fig.align="center", dpi=300,dev="png"}
 #apply the censors to NA out the phenotypes outside the range
 dt[mouse1.3_AUC < mouse1.3_censor_lower | mouse1.3_AUC > mouse1.3_censor_upper, mouse1.3_AUC:=NA]
 dt[mouse1.4_AUC < mouse1.4_censor_lower | mouse1.4_AUC > mouse1.4_censor_upper, mouse1.4_AUC:=NA]
