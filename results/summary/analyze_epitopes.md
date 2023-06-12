@@ -3,13 +3,11 @@ Analyze Epitopes
 Tyler Starr
 3/23/2023
 
--   <a href="#setup" id="toc-setup">Setup</a>
--   <a href="#calculate-per-site-summary-metric"
-    id="toc-calculate-per-site-summary-metric">Calculate per-site summary
-    metric</a>
--   <a href="#lineplots" id="toc-lineplots">Lineplots</a>
--   <a href="#map-to-rbd-structure" id="toc-map-to-rbd-structure">Map to RBD
-    structure</a>
+-   [Setup](#setup)
+-   [Calculate per-site summary
+    metric](#calculate-per-site-summary-metric)
+-   [Lineplots](#lineplots)
+-   [Map to RBD structure](#map-to-rbd-structure)
 
 This notebook reads in the per-mutation impacts on sera binding
 (delta_normAUC), computes an average effect per site, and visualizes

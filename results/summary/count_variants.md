@@ -49,8 +49,8 @@ print(f"Using alignparse version {alignparse.__version__}")
 print(f"Using dms_variants version {dms_variants.__version__}")
 ```
 
-    Using alignparse version 0.2.4
-    Using dms_variants version 0.8.9
+    Using alignparse version 0.6.1
+    Using dms_variants version 1.4.3
 
 
 Ignore warnings that clutter output:
@@ -1411,7 +1411,7 @@ display(HTML(barcode_runs.to_html(index=False)))
       <td>4</td>
       <td>230223</td>
       <td>3793805</td>
-      <td>[/shared/ngs/illumina/tstarr/230306_VH01189_73_AACKH7JM5/Unaligned/Project_tstarr/230223_s16_b2_S62_R1_001.fastq.gz]</td>
+      <td>[/shared/ngs/illumina/tstarr/230530_VH00699_318_AACVCNWM5/Unaligned/Project_tstarr/230223_s16_b2_S37_R1_001.fastq.gz]</td>
     </tr>
     <tr>
       <td>pool1</td>
@@ -1421,7 +1421,7 @@ display(HTML(barcode_runs.to_html(index=False)))
       <td>4</td>
       <td>230223</td>
       <td>968064</td>
-      <td>[/shared/ngs/illumina/tstarr/230306_VH01189_73_AACKH7JM5/Unaligned/Project_tstarr/230223_s16_b3_S63_R1_001.fastq.gz]</td>
+      <td>[/shared/ngs/illumina/tstarr/230530_VH00699_318_AACVCNWM5/Unaligned/Project_tstarr/230223_s16_b3_S38_R1_001.fastq.gz]</td>
     </tr>
     <tr>
       <td>pool1</td>
@@ -2708,18 +2708,18 @@ display(HTML(fates
     <tr>
       <th>mouse2-6_04_bin2</th>
       <td>0</td>
-      <td>13</td>
-      <td>52</td>
-      <td>6</td>
-      <td>51</td>
+      <td>1880905</td>
+      <td>1619782</td>
+      <td>111100</td>
+      <td>7068258</td>
     </tr>
     <tr>
       <th>mouse2-6_04_bin3</th>
       <td>0</td>
-      <td>10</td>
-      <td>299</td>
-      <td>0</td>
-      <td>25</td>
+      <td>680853</td>
+      <td>428773</td>
+      <td>28580</td>
+      <td>1714308</td>
     </tr>
     <tr>
       <th>mouse2-6_04_bin4</th>

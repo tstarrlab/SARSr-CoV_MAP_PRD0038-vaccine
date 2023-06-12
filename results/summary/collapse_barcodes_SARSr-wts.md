@@ -4,11 +4,10 @@ wildtype sarbecoviruses pool
 Tyler Starr
 03/22/2023
 
--   <a href="#setup" id="toc-setup">Setup</a>
--   <a href="#calculate-per-variant-mean-scores"
-    id="toc-calculate-per-variant-mean-scores">Calculate per-variant mean
-    scores</a>
--   <a href="#heatmaps" id="toc-heatmaps">Heatmaps!</a>
+-   [Setup](#setup)
+-   [Calculate per-variant mean
+    scores](#calculate-per-variant-mean-scores)
+-   [Heatmaps!](#heatmaps)
 
 This notebook reads in the per-barcode sera binding values and
 previously measured expression for sarbecovirus homologs pool. It
@@ -148,8 +147,6 @@ p6 <- ggplot(dt[!is.na(mouse2.6_AUC),],aes(x=target,y=mouse2.6_AUC))+
 grid.arrange(p1,p2,p3,p4,p5,p6,ncol=1)
 ```
 
-    ## Warning: Groups with fewer than two data points have been dropped.
-
 <img src="collapse_barcodes_SARSr-wts_files/figure-gfm/unfiltered_AUCs-1.png" style="display: block; margin: auto;" />
 
 Let’s add a variable that flags the top and bottom 2.5% of expression
@@ -207,10 +204,6 @@ p6 <- ggplot(dt[!is.na(mouse2.6_AUC) & mouse2.6_AUC >= mouse2.6_censor_lower & m
 
 grid.arrange(p1,p2,p3,p4,p5,p6,ncol=1)
 ```
-
-    ## Warning: Groups with fewer than two data points have been dropped.
-
-    ## Warning: Groups with fewer than two data points have been dropped.
 
 <img src="collapse_barcodes_SARSr-wts_files/figure-gfm/censor_2.5_AUCs-1.png" style="display: block; margin: auto;" />
 
