@@ -4,7 +4,7 @@ Before publishing your study, you need to make the raw data available.
 Here is how to upload FASTQ files to the NCBI [Sequence Read Archive](https://www.ncbi.nlm.nih.gov/sra).
 The files are uploaded to a newly created BioProject [PRJNA714677](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA714677), which is set up to store all deep mutational scanning and mutational antigenic profiling experiments that use the v1 homologs libraries described in this work.
 
-These instructions are for uploading Illumina barcode sequencing for the expression Sort-seq and ACE2-bindign Tite-seq experiments.
+These instructions are for uploading Illumina barcode sequencing for the serum-binding titration experiments analyzed in this repository.
 
 For each new deep mutational scanning or mutational antigenic profiling study with these libraries, you can upload the FASTQ files as a new *BioSample*.
 Here are the steps:
@@ -22,7 +22,7 @@ You will now be at the *Sample Type* page, and you have to select the package th
 Click *Microbe*--although we are studying a pathogen it's not a direct clinical sample but an experiment using yeast on a pathogen, which is why we choose this sample type.
 Then click `Continue`.
 Now you enter the sample attributes.
-For the sample name, provide a short name that describes the sample, such as `sarbecovirus_ACE2_profiling`.
+For the sample name, provide a short name that describes the sample, such as `sarbecovirus_PRD0038-serum-profiling`.
 Also provide the rest of the information:
 
   - Organism: Severe acute respiratory syndrome-related coronavirus
@@ -31,7 +31,7 @@ Also provide the rest of the information:
 
   - isolation source: plasmid
 
-  - collection date: 2021
+  - collection date: 2023
 
   - geographic location: USA
 
@@ -40,10 +40,10 @@ Also provide the rest of the information:
 Then hit `Continue`.
 You will now be on the page to specify the BioProject.
 We are adding to an existing BioProject, so enter [PRJNA714677](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA714677) as the *Existing BioProject* and hit `Continue`.
-Finally, add a sample title, such as "Illumina barcode sequencing from ACE2 receptor profiling using yeast-displayed sarbecovirus RBDs."
+Finally, add a sample title, such as "Illumina barcode sequencing from PRD0038 serum binding profiling using yeast-displayed sarbecovirus RBDs."
 Then hit `Continue`, make sure everything looks correct, then hit `Submit`.
 
-After a brief bit of processing, the *BioSample* submission should show up, along with a sample accession that will be in the format of *SAMN20174027*.
+After a brief bit of processing, the *BioSample* submission should show up, along with a sample accession that will be in the format of *SAMN36715819*.
 Add this sample accession to [upload_config.yaml](upload_config.yaml) as the value for the *biosample_accession* key.
 
 ## Upload the sequencing data
@@ -88,7 +88,7 @@ Click the option for *FTP or Aspera Command Line file preload*.
 
 If you click on the `+` FTP upload instructions, you will see details.
 Add the `Username` and `account folder` provided in these instructions to [upload_config.yaml](upload_config.yaml) as the values for the *ftp_username* and *ftp_account_folder* keys.
-Also add a value for the *ftp_subfolder* that is meaningful for this particular submission, such as *Crowe_antibody_barcodes*.
+Also add a value for the *ftp_subfolder* that is meaningful for this particular submission, such as *sarbecovirus_PRD0038-serum-profiling*.
 Finally, put the FTP password as plain text in a file called `ftp_password.txt` which is **not** tracked in this repo for privacy.
 
 ## Upload the sequencing data
