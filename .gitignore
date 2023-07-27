@@ -28,4 +28,5 @@ results/bc_sera_binding/*
 
 !results/final_variant_scores
 results/final_variant_scores/*
-!results/final_variant_scores/final_variant_scores_lib*.csv
+!results/final_variant_scores/final_variant_scores_wts.csv
+!results/final_variant_scores/final_variant_scores_dms.csv
