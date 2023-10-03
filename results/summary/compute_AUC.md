@@ -1857,3 +1857,199 @@ legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
 #save pdf
 invisible(dev.print(pdf, paste(config$sera_delta_AUC_dir,"/representative-plots_mouse2-6.pdf",sep="")))
 ```
+
+## Plot all curves
+
+``` r
+par(mfrow=c(1,6))
+
+for(bg in c(config$SARS2_extant, config$SARS1_extant, config$EurAf_extant, config$RsYN04_extant, config$Clade2_extant)){
+  #mouse1-4
+  #set empty plot window
+  plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main=paste(bg,", mouse1-4"),ylab="serum binding (mean FACS bin)",xlab="serum dilution (10^-6 = 0)")
+  #put in faint points per-barcode
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_05_meanbin`]
+  points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-4_04_totalcount` > cutoff,`mouse1-4_04_meanbin`]
+  points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-4_03_totalcount` > cutoff,`mouse1-4_03_meanbin`]
+  points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-4_02_totalcount` > cutoff,`mouse1-4_02_meanbin`]
+  points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-4_01_totalcount` > cutoff,`mouse1-4_01_meanbin`]
+  points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+  #put in black line for the average
+  y1 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_05_meanbin`],na.rm=T)
+  points(10^-6,y1,pch=16,col="black")
+  y2 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_04_meanbin`],na.rm=T)
+  points(10^-5,y2,pch=16,col="black")
+  y3 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_03_meanbin`],na.rm=T)
+  points(10^-4,y3,pch=16,col="black")
+  y4 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_02_meanbin`],na.rm=T)
+  points(10^-3,y4,pch=16,col="black")
+  y5 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_01_meanbin`],na.rm=T)
+  points(10^-2,y5,pch=16,col="black")
+  #connect average points with lines
+  lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+  lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+  lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+  abline(h=y1,lty=2,col="gray50")
+  
+  #mouse1-6
+  #set empty plot window
+  plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main=paste(bg,", mouse1-6"),ylab="serum binding (mean FACS bin)",xlab="serum dilution (10^-6 = 0)")
+  #put in faint points per-barcode
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_05_meanbin`]
+  points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-6_04_totalcount` > cutoff,`mouse1-6_04_meanbin`]
+  points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-6_03_totalcount` > cutoff,`mouse1-6_03_meanbin`]
+  points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-6_02_totalcount` > cutoff,`mouse1-6_02_meanbin`]
+  points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-6_01_totalcount` > cutoff,`mouse1-6_01_meanbin`]
+  points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+  #put in black line for the average
+  y1 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_05_meanbin`],na.rm=T)
+  points(10^-6,y1,pch=16,col="black")
+  y2 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_04_meanbin`],na.rm=T)
+  points(10^-5,y2,pch=16,col="black")
+  y3 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_03_meanbin`],na.rm=T)
+  points(10^-4,y3,pch=16,col="black")
+  y4 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_02_meanbin`],na.rm=T)
+  points(10^-3,y4,pch=16,col="black")
+  y5 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_01_meanbin`],na.rm=T)
+  points(10^-2,y5,pch=16,col="black")
+  #connect average points with lines
+  lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+  lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+  lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+  abline(h=y1,lty=2,col="gray50")
+  
+  #mouse1-3
+  #set empty plot window
+  plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main=paste(bg,", mouse1-3"),ylab="serum binding (mean FACS bin)",xlab="serum dilution (10^-6 = 0)")
+  #put in faint points per-barcode
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_05_meanbin`]
+  points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-3_04_totalcount` > cutoff,`mouse1-3_04_meanbin`]
+  points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-3_03_totalcount` > cutoff,`mouse1-3_03_meanbin`]
+  points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-3_02_totalcount` > cutoff,`mouse1-3_02_meanbin`]
+  points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-3_01_totalcount` > cutoff,`mouse1-3_01_meanbin`]
+  points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+  #put in black line for the average
+  y1 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_05_meanbin`],na.rm=T)
+  points(10^-6,y1,pch=16,col="black")
+  y2 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_04_meanbin`],na.rm=T)
+  points(10^-5,y2,pch=16,col="black")
+  y3 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_03_meanbin`],na.rm=T)
+  points(10^-4,y3,pch=16,col="black")
+  y4 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_02_meanbin`],na.rm=T)
+  points(10^-3,y4,pch=16,col="black")
+  y5 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_01_meanbin`],na.rm=T)
+  points(10^-2,y5,pch=16,col="black")
+  #connect average points with lines
+  lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+  lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+  lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+  abline(h=y1,lty=2,col="gray50")
+  
+  #mouse1-5
+  #set empty plot window
+  plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main=paste(bg,", mouse1-5"),ylab="serum binding (mean FACS bin)",xlab="serum dilution (10^-6 = 0)")
+  #put in faint points per-barcode
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_05_meanbin`]
+  points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-5_04_totalcount` > cutoff,`mouse1-5_04_meanbin`]
+  points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-5_03_totalcount` > cutoff,`mouse1-5_03_meanbin`]
+  points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-5_02_totalcount` > cutoff,`mouse1-5_02_meanbin`]
+  points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-5_01_totalcount` > cutoff,`mouse1-5_01_meanbin`]
+  points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+  #put in black line for the average
+  y1 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_05_meanbin`],na.rm=T)
+  points(10^-6,y1,pch=16,col="black")
+  y2 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_04_meanbin`],na.rm=T)
+  points(10^-5,y2,pch=16,col="black")
+  y3 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_03_meanbin`],na.rm=T)
+  points(10^-4,y3,pch=16,col="black")
+  y4 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_02_meanbin`],na.rm=T)
+  points(10^-3,y4,pch=16,col="black")
+  y5 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_01_meanbin`],na.rm=T)
+  points(10^-2,y5,pch=16,col="black")
+  #connect average points with lines
+  lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+  lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+  lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+  abline(h=y1,lty=2,col="gray50")
+  
+  #mouse2-3
+  #set empty plot window
+  plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main=paste(bg,", mouse2-3"),ylab="serum binding (mean FACS bin)",xlab="serum dilution (10^-6 = 0)")
+  #put in faint points per-barcode
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_05_meanbin`]
+  points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse2-3_04_totalcount` > cutoff,`mouse2-3_04_meanbin`]
+  points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse2-3_03_totalcount` > cutoff,`mouse2-3_03_meanbin`]
+  points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse2-3_02_totalcount` > cutoff,`mouse2-3_02_meanbin`]
+  points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse2-3_01_totalcount` > cutoff,`mouse2-3_01_meanbin`]
+  points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+  #put in black line for the average
+  y1 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_05_meanbin`],na.rm=T)
+  points(10^-6,y1,pch=16,col="black")
+  y2 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_04_meanbin`],na.rm=T)
+  points(10^-5,y2,pch=16,col="black")
+  y3 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_03_meanbin`],na.rm=T)
+  points(10^-4,y3,pch=16,col="black")
+  y4 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_02_meanbin`],na.rm=T)
+  points(10^-3,y4,pch=16,col="black")
+  y5 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_01_meanbin`],na.rm=T)
+  points(10^-2,y5,pch=16,col="black")
+  #connect average points with lines
+  lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+  lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+  lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+  abline(h=y1,lty=2,col="gray50")
+  
+  #mouse2-6
+  #set empty plot window
+  plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main=paste(bg,", mouse2-6"),ylab="serum binding (mean FACS bin)",xlab="serum dilution (10^-6 = 0)")
+  #put in faint points per-barcode
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_05_meanbin`]
+  points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse2-6_04_totalcount` > cutoff,`mouse2-6_04_meanbin`]
+  points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse2-6_03_totalcount` > cutoff,`mouse2-6_03_meanbin`]
+  points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse2-6_02_totalcount` > cutoff,`mouse2-6_02_meanbin`]
+  points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse2-6_01_totalcount` > cutoff,`mouse2-6_01_meanbin`]
+  points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+  #put in black line for the average
+  y1 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_05_meanbin`],na.rm=T)
+  points(10^-6,y1,pch=16,col="black")
+  y2 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_04_meanbin`],na.rm=T)
+  points(10^-5,y2,pch=16,col="black")
+  y3 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_03_meanbin`],na.rm=T)
+  points(10^-4,y3,pch=16,col="black")
+  y4 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_02_meanbin`],na.rm=T)
+  points(10^-3,y4,pch=16,col="black")
+  y5 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_01_meanbin`],na.rm=T)
+  points(10^-2,y5,pch=16,col="black")
+  #connect average points with lines
+  lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+  lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+  lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+  abline(h=y1,lty=2,col="gray50")
+}
+```
+
+<img src="compute_AUC_files/figure-gfm/binding_curves_all-1.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-2.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-3.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-4.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-5.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-6.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-7.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-8.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-9.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-10.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-11.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-12.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-13.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-14.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-15.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-16.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-17.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-18.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-19.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-20.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-21.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-22.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-23.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-24.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-25.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-26.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-27.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-28.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-29.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-30.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-31.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-32.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-33.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-34.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-35.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-36.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-37.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-38.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-39.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-40.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-41.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-42.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-43.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-44.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-45.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-46.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-47.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-48.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-49.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-50.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-51.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-52.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-53.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-54.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-55.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-56.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-57.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-58.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-59.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-60.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-61.png" style="display: block; margin: auto;" /><img src="compute_AUC_files/figure-gfm/binding_curves_all-62.png" style="display: block; margin: auto;" />

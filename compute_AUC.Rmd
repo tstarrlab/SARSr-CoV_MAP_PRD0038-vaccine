@@ -1030,7 +1030,7 @@ legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
 invisible(dev.print(pdf, paste(config$sera_delta_AUC_dir,"/representative-plots_mouse1-3.pdf",sep="")))
 ```
 
-```{r binding_curves_mouse1-5, echo=T, fig.width=16.5 fig.height=2.75, fig.align="center", dpi=300,dev="png"}
+```{r binding_curves_mouse1-5, echo=T, fig.width=16.5, fig.height=2.75, fig.align="center", dpi=300,dev="png"}
 par(mfrow=c(1,6))
 
 #SARS-CoV-2_WH1
@@ -1429,7 +1429,7 @@ invisible(dev.print(pdf, paste(config$sera_delta_AUC_dir,"/representative-plots_
 ```
 
 
-```{r binding_curves_mouse2-6, echo=T, fig.width=18, fig.height=3, fig.align="center", dpi=300,dev="png"}
+```{r binding_curves_mouse2-6, echo=T, fig.width=16.5, fig.height=2.75, fig.align="center", dpi=300,dev="png"}
 par(mfrow=c(1,6))
 
 #SARS-CoV-2_WH1
@@ -1627,3 +1627,203 @@ legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
 #save pdf
 invisible(dev.print(pdf, paste(config$sera_delta_AUC_dir,"/representative-plots_mouse2-6.pdf",sep="")))
 ```
+
+
+
+## Plot all curves
+
+```{r binding_curves_all, echo=T, fig.width=16.5, fig.height=2.75, fig.align="center", dpi=300,dev="png"}
+par(mfrow=c(1,6))
+
+for(bg in c(config$SARS2_extant, config$SARS1_extant, config$EurAf_extant, config$RsYN04_extant, config$Clade2_extant)){
+  #mouse1-4
+  #set empty plot window
+  plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main=paste(bg,", mouse1-4"),ylab="serum binding (mean FACS bin)",xlab="serum dilution (10^-6 = 0)")
+  #put in faint points per-barcode
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_05_meanbin`]
+  points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-4_04_totalcount` > cutoff,`mouse1-4_04_meanbin`]
+  points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-4_03_totalcount` > cutoff,`mouse1-4_03_meanbin`]
+  points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-4_02_totalcount` > cutoff,`mouse1-4_02_meanbin`]
+  points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-4_01_totalcount` > cutoff,`mouse1-4_01_meanbin`]
+  points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+  #put in black line for the average
+  y1 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_05_meanbin`],na.rm=T)
+  points(10^-6,y1,pch=16,col="black")
+  y2 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_04_meanbin`],na.rm=T)
+  points(10^-5,y2,pch=16,col="black")
+  y3 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_03_meanbin`],na.rm=T)
+  points(10^-4,y3,pch=16,col="black")
+  y4 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_02_meanbin`],na.rm=T)
+  points(10^-3,y4,pch=16,col="black")
+  y5 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_01_meanbin`],na.rm=T)
+  points(10^-2,y5,pch=16,col="black")
+  #connect average points with lines
+  lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+  lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+  lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+  abline(h=y1,lty=2,col="gray50")
+  
+  #mouse1-6
+  #set empty plot window
+  plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main=paste(bg,", mouse1-6"),ylab="serum binding (mean FACS bin)",xlab="serum dilution (10^-6 = 0)")
+  #put in faint points per-barcode
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_05_meanbin`]
+  points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-6_04_totalcount` > cutoff,`mouse1-6_04_meanbin`]
+  points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-6_03_totalcount` > cutoff,`mouse1-6_03_meanbin`]
+  points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-6_02_totalcount` > cutoff,`mouse1-6_02_meanbin`]
+  points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-6_01_totalcount` > cutoff,`mouse1-6_01_meanbin`]
+  points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+  #put in black line for the average
+  y1 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_05_meanbin`],na.rm=T)
+  points(10^-6,y1,pch=16,col="black")
+  y2 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_04_meanbin`],na.rm=T)
+  points(10^-5,y2,pch=16,col="black")
+  y3 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_03_meanbin`],na.rm=T)
+  points(10^-4,y3,pch=16,col="black")
+  y4 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_02_meanbin`],na.rm=T)
+  points(10^-3,y4,pch=16,col="black")
+  y5 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_01_meanbin`],na.rm=T)
+  points(10^-2,y5,pch=16,col="black")
+  #connect average points with lines
+  lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+  lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+  lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+  abline(h=y1,lty=2,col="gray50")
+  
+  #mouse1-3
+  #set empty plot window
+  plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main=paste(bg,", mouse1-3"),ylab="serum binding (mean FACS bin)",xlab="serum dilution (10^-6 = 0)")
+  #put in faint points per-barcode
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_05_meanbin`]
+  points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-3_04_totalcount` > cutoff,`mouse1-3_04_meanbin`]
+  points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-3_03_totalcount` > cutoff,`mouse1-3_03_meanbin`]
+  points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-3_02_totalcount` > cutoff,`mouse1-3_02_meanbin`]
+  points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-3_01_totalcount` > cutoff,`mouse1-3_01_meanbin`]
+  points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+  #put in black line for the average
+  y1 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_05_meanbin`],na.rm=T)
+  points(10^-6,y1,pch=16,col="black")
+  y2 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_04_meanbin`],na.rm=T)
+  points(10^-5,y2,pch=16,col="black")
+  y3 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_03_meanbin`],na.rm=T)
+  points(10^-4,y3,pch=16,col="black")
+  y4 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_02_meanbin`],na.rm=T)
+  points(10^-3,y4,pch=16,col="black")
+  y5 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_01_meanbin`],na.rm=T)
+  points(10^-2,y5,pch=16,col="black")
+  #connect average points with lines
+  lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+  lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+  lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+  abline(h=y1,lty=2,col="gray50")
+  
+  #mouse1-5
+  #set empty plot window
+  plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main=paste(bg,", mouse1-5"),ylab="serum binding (mean FACS bin)",xlab="serum dilution (10^-6 = 0)")
+  #put in faint points per-barcode
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_05_meanbin`]
+  points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-5_04_totalcount` > cutoff,`mouse1-5_04_meanbin`]
+  points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-5_03_totalcount` > cutoff,`mouse1-5_03_meanbin`]
+  points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-5_02_totalcount` > cutoff,`mouse1-5_02_meanbin`]
+  points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse1-5_01_totalcount` > cutoff,`mouse1-5_01_meanbin`]
+  points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+  #put in black line for the average
+  y1 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_05_meanbin`],na.rm=T)
+  points(10^-6,y1,pch=16,col="black")
+  y2 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_04_meanbin`],na.rm=T)
+  points(10^-5,y2,pch=16,col="black")
+  y3 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_03_meanbin`],na.rm=T)
+  points(10^-4,y3,pch=16,col="black")
+  y4 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_02_meanbin`],na.rm=T)
+  points(10^-3,y4,pch=16,col="black")
+  y5 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_01_meanbin`],na.rm=T)
+  points(10^-2,y5,pch=16,col="black")
+  #connect average points with lines
+  lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+  lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+  lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+  abline(h=y1,lty=2,col="gray50")
+  
+  #mouse2-3
+  #set empty plot window
+  plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main=paste(bg,", mouse2-3"),ylab="serum binding (mean FACS bin)",xlab="serum dilution (10^-6 = 0)")
+  #put in faint points per-barcode
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_05_meanbin`]
+  points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse2-3_04_totalcount` > cutoff,`mouse2-3_04_meanbin`]
+  points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse2-3_03_totalcount` > cutoff,`mouse2-3_03_meanbin`]
+  points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse2-3_02_totalcount` > cutoff,`mouse2-3_02_meanbin`]
+  points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse2-3_01_totalcount` > cutoff,`mouse2-3_01_meanbin`]
+  points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+  #put in black line for the average
+  y1 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_05_meanbin`],na.rm=T)
+  points(10^-6,y1,pch=16,col="black")
+  y2 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_04_meanbin`],na.rm=T)
+  points(10^-5,y2,pch=16,col="black")
+  y3 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_03_meanbin`],na.rm=T)
+  points(10^-4,y3,pch=16,col="black")
+  y4 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_02_meanbin`],na.rm=T)
+  points(10^-3,y4,pch=16,col="black")
+  y5 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_01_meanbin`],na.rm=T)
+  points(10^-2,y5,pch=16,col="black")
+  #connect average points with lines
+  lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+  lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+  lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+  abline(h=y1,lty=2,col="gray50")
+  
+  #mouse2-6
+  #set empty plot window
+  plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main=paste(bg,", mouse2-6"),ylab="serum binding (mean FACS bin)",xlab="serum dilution (10^-6 = 0)")
+  #put in faint points per-barcode
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_05_meanbin`]
+  points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse2-6_04_totalcount` > cutoff,`mouse2-6_04_meanbin`]
+  points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse2-6_03_totalcount` > cutoff,`mouse2-6_03_meanbin`]
+  points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse2-6_02_totalcount` > cutoff,`mouse2-6_02_meanbin`]
+  points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+  y <- dt[target==bg & variant_class=="wildtype" & `mouse2-6_01_totalcount` > cutoff,`mouse2-6_01_meanbin`]
+  points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+  #put in black line for the average
+  y1 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_05_meanbin`],na.rm=T)
+  points(10^-6,y1,pch=16,col="black")
+  y2 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_04_meanbin`],na.rm=T)
+  points(10^-5,y2,pch=16,col="black")
+  y3 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_03_meanbin`],na.rm=T)
+  points(10^-4,y3,pch=16,col="black")
+  y4 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_02_meanbin`],na.rm=T)
+  points(10^-3,y4,pch=16,col="black")
+  y5 <- mean(dt[target==bg & variant_class=="wildtype" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_01_meanbin`],na.rm=T)
+  points(10^-2,y5,pch=16,col="black")
+  #connect average points with lines
+  lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+  lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+  lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+  abline(h=y1,lty=2,col="gray50")
+}
+
+
+```
+
+
