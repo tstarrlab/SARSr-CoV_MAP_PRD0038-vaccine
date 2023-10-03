@@ -4,10 +4,11 @@ wildtype sarbecoviruses pool
 Tyler Starr
 03/22/2023
 
--   [Setup](#setup)
--   [Calculate per-variant mean
-    scores](#calculate-per-variant-mean-scores)
--   [Heatmaps!](#heatmaps)
+-   <a href="#setup" id="toc-setup">Setup</a>
+-   <a href="#calculate-per-variant-mean-scores"
+    id="toc-calculate-per-variant-mean-scores">Calculate per-variant mean
+    scores</a>
+-   <a href="#heatmaps" id="toc-heatmaps">Heatmaps!</a>
 
 This notebook reads in the per-barcode sera binding values and
 previously measured expression for sarbecovirus homologs pool. It

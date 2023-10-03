@@ -428,5 +428,1202 @@ dt[,.(library,sublibrary,barcode,target,variant_class,aa_substitutions,n_aa_subs
 
 ```
 
+## Plot representative binding curves
+
+Want to illustrate representative binding curves from which AUCs were measured. Will do, for each of the six sera, binding curves for wildtype PRD-0038, RsYN04, SARS-CoV-2 WH1 (and BA.2?), SARS-CoV-1 Urbani, and RmYN02
 
 
+```{r binding_curves_mouse1-4, echo=T, fig.width=16.5, fig.height=2.75, fig.align="center", dpi=300,dev="png"}
+par(mfrow=c(1,6))
+
+#SARS-CoV-2_WH1
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.4, SARS-CoV-2_WH1",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_04_totalcount` > cutoff,`mouse1-4_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_03_totalcount` > cutoff,`mouse1-4_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_02_totalcount` > cutoff,`mouse1-4_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_01_totalcount` > cutoff,`mouse1-4_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_04_totalcount` > cutoff,`mouse1-4_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_03_totalcount` > cutoff,`mouse1-4_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_02_totalcount` > cutoff,`mouse1-4_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_01_totalcount` > cutoff,`mouse1-4_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#SARS-CoV-2_BA2
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.4, SARS-CoV-2_BA2",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse1-4_05_totalcount` > cutoff & variant_class=="wildtype",`mouse1-4_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse1-4_04_totalcount` > cutoff & variant_class=="wildtype",`mouse1-4_04_meanbin`][1:300]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse1-4_03_totalcount` > cutoff & variant_class=="wildtype",`mouse1-4_03_meanbin`][1:300]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse1-4_02_totalcount` > cutoff & variant_class=="wildtype",`mouse1-4_02_meanbin`][1:300]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse1-4_01_totalcount` > cutoff & variant_class=="wildtype",`mouse1-4_01_meanbin`][1:300]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse1-4_05_totalcount` > cutoff & variant_class=="wildtype",`mouse1-4_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse1-4_04_totalcount` > cutoff & variant_class=="wildtype",`mouse1-4_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse1-4_03_totalcount` > cutoff & variant_class=="wildtype",`mouse1-4_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse1-4_02_totalcount` > cutoff & variant_class=="wildtype",`mouse1-4_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse1-4_01_totalcount` > cutoff & variant_class=="wildtype",`mouse1-4_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#PRD-0038
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.4, PRD-0038",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_04_totalcount` > cutoff,`mouse1-4_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_03_totalcount` > cutoff,`mouse1-4_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_02_totalcount` > cutoff,`mouse1-4_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_01_totalcount` > cutoff,`mouse1-4_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_04_totalcount` > cutoff,`mouse1-4_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_03_totalcount` > cutoff,`mouse1-4_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_02_totalcount` > cutoff,`mouse1-4_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_01_totalcount` > cutoff,`mouse1-4_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#SARS-CoV-1_Urbani
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.4, SARS-CoV-1_Urbani",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_04_totalcount` > cutoff,`mouse1-4_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_03_totalcount` > cutoff,`mouse1-4_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_02_totalcount` > cutoff,`mouse1-4_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_01_totalcount` > cutoff,`mouse1-4_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_04_totalcount` > cutoff,`mouse1-4_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_03_totalcount` > cutoff,`mouse1-4_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_02_totalcount` > cutoff,`mouse1-4_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_01_totalcount` > cutoff,`mouse1-4_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#RsYN04
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.4, RsYN04",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_04_totalcount` > cutoff,`mouse1-4_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_03_totalcount` > cutoff,`mouse1-4_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_02_totalcount` > cutoff,`mouse1-4_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_01_totalcount` > cutoff,`mouse1-4_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_04_totalcount` > cutoff,`mouse1-4_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_03_totalcount` > cutoff,`mouse1-4_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_02_totalcount` > cutoff,`mouse1-4_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_01_totalcount` > cutoff,`mouse1-4_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#RmYN02
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.4, RmYN02",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_04_totalcount` > cutoff,`mouse1-4_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_03_totalcount` > cutoff,`mouse1-4_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_02_totalcount` > cutoff,`mouse1-4_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_01_totalcount` > cutoff,`mouse1-4_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_05_totalcount` > cutoff,`mouse1-4_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_04_totalcount` > cutoff,`mouse1-4_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_03_totalcount` > cutoff,`mouse1-4_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_02_totalcount` > cutoff,`mouse1-4_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-4_01_totalcount` > cutoff,`mouse1-4_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#save pdf
+invisible(dev.print(pdf, paste(config$sera_delta_AUC_dir,"/representative-plots_mouse1-4.pdf",sep="")))
+```
+
+```{r binding_curves_mouse1-6, echo=T, fig.width=16.5, fig.height=2.75, fig.align="center", dpi=300,dev="png"}
+par(mfrow=c(1,6))
+
+#SARS-CoV-2_WH1
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.6, SARS-CoV-2_WH1",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_04_totalcount` > cutoff,`mouse1-6_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_03_totalcount` > cutoff,`mouse1-6_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_02_totalcount` > cutoff,`mouse1-6_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_01_totalcount` > cutoff,`mouse1-6_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_04_totalcount` > cutoff,`mouse1-6_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_03_totalcount` > cutoff,`mouse1-6_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_02_totalcount` > cutoff,`mouse1-6_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_01_totalcount` > cutoff,`mouse1-6_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#SARS-CoV-2_BA2
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.6, SARS-CoV-2_BA2",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse1-6_05_totalcount` > cutoff & variant_class=="wildtype",`mouse1-6_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse1-6_04_totalcount` > cutoff & variant_class=="wildtype",`mouse1-6_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse1-6_03_totalcount` > cutoff & variant_class=="wildtype",`mouse1-6_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse1-6_02_totalcount` > cutoff & variant_class=="wildtype",`mouse1-6_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse1-6_01_totalcount` > cutoff & variant_class=="wildtype",`mouse1-6_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse1-6_05_totalcount` > cutoff & variant_class=="wildtype",`mouse1-6_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse1-6_04_totalcount` > cutoff & variant_class=="wildtype",`mouse1-6_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse1-6_03_totalcount` > cutoff & variant_class=="wildtype",`mouse1-6_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse1-6_02_totalcount` > cutoff & variant_class=="wildtype",`mouse1-6_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse1-6_01_totalcount` > cutoff & variant_class=="wildtype",`mouse1-6_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#PRD-0038
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.6, PRD-0038",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_04_totalcount` > cutoff,`mouse1-6_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_03_totalcount` > cutoff,`mouse1-6_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_02_totalcount` > cutoff,`mouse1-6_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_01_totalcount` > cutoff,`mouse1-6_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_04_totalcount` > cutoff,`mouse1-6_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_03_totalcount` > cutoff,`mouse1-6_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_02_totalcount` > cutoff,`mouse1-6_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_01_totalcount` > cutoff,`mouse1-6_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#SARS-CoV-1_Urbani
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.6, SARS-CoV-1_Urbani",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_04_totalcount` > cutoff,`mouse1-6_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_03_totalcount` > cutoff,`mouse1-6_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_02_totalcount` > cutoff,`mouse1-6_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_01_totalcount` > cutoff,`mouse1-6_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_04_totalcount` > cutoff,`mouse1-6_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_03_totalcount` > cutoff,`mouse1-6_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_02_totalcount` > cutoff,`mouse1-6_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_01_totalcount` > cutoff,`mouse1-6_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#RsYN04
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.6, RsYN04",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_04_totalcount` > cutoff,`mouse1-6_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_03_totalcount` > cutoff,`mouse1-6_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_02_totalcount` > cutoff,`mouse1-6_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_01_totalcount` > cutoff,`mouse1-6_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_04_totalcount` > cutoff,`mouse1-6_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_03_totalcount` > cutoff,`mouse1-6_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_02_totalcount` > cutoff,`mouse1-6_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_01_totalcount` > cutoff,`mouse1-6_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#RmYN02
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.6, RmYN02",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_04_totalcount` > cutoff,`mouse1-6_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_03_totalcount` > cutoff,`mouse1-6_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_02_totalcount` > cutoff,`mouse1-6_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_01_totalcount` > cutoff,`mouse1-6_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_05_totalcount` > cutoff,`mouse1-6_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_04_totalcount` > cutoff,`mouse1-6_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_03_totalcount` > cutoff,`mouse1-6_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_02_totalcount` > cutoff,`mouse1-6_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-6_01_totalcount` > cutoff,`mouse1-6_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#save pdf
+invisible(dev.print(pdf, paste(config$sera_delta_AUC_dir,"/representative-plots_mouse1-6.pdf",sep="")))
+```
+
+```{r binding_curves_mouse1-3, echo=T, fig.width=16.5, fig.height=2.75, fig.align="center", dpi=300,dev="png"}
+par(mfrow=c(1,6))
+
+#SARS-CoV-2_WH1
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.3, SARS-CoV-2_WH1",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_04_totalcount` > cutoff,`mouse1-3_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_03_totalcount` > cutoff,`mouse1-3_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_02_totalcount` > cutoff,`mouse1-3_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_01_totalcount` > cutoff,`mouse1-3_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_04_totalcount` > cutoff,`mouse1-3_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_03_totalcount` > cutoff,`mouse1-3_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_02_totalcount` > cutoff,`mouse1-3_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_01_totalcount` > cutoff,`mouse1-3_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#SARS-CoV-2_BA2
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.3, SARS-CoV-2_BA2",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse1-3_05_totalcount` > cutoff & variant_class=="wildtype",`mouse1-3_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse1-3_04_totalcount` > cutoff & variant_class=="wildtype",`mouse1-3_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse1-3_03_totalcount` > cutoff & variant_class=="wildtype",`mouse1-3_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse1-3_02_totalcount` > cutoff & variant_class=="wildtype",`mouse1-3_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse1-3_01_totalcount` > cutoff & variant_class=="wildtype",`mouse1-3_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse1-3_05_totalcount` > cutoff & variant_class=="wildtype",`mouse1-3_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse1-3_04_totalcount` > cutoff & variant_class=="wildtype",`mouse1-3_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse1-3_03_totalcount` > cutoff & variant_class=="wildtype",`mouse1-3_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse1-3_02_totalcount` > cutoff & variant_class=="wildtype",`mouse1-3_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse1-3_01_totalcount` > cutoff & variant_class=="wildtype",`mouse1-3_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#PRD-0038
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.3, PRD-0038",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_04_totalcount` > cutoff,`mouse1-3_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_03_totalcount` > cutoff,`mouse1-3_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_02_totalcount` > cutoff,`mouse1-3_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_01_totalcount` > cutoff,`mouse1-3_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_04_totalcount` > cutoff,`mouse1-3_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_03_totalcount` > cutoff,`mouse1-3_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_02_totalcount` > cutoff,`mouse1-3_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_01_totalcount` > cutoff,`mouse1-3_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#SARS-CoV-1_Urbani
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.3, SARS-CoV-1_Urbani",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_04_totalcount` > cutoff,`mouse1-3_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_03_totalcount` > cutoff,`mouse1-3_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_02_totalcount` > cutoff,`mouse1-3_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_01_totalcount` > cutoff,`mouse1-3_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_04_totalcount` > cutoff,`mouse1-3_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_03_totalcount` > cutoff,`mouse1-3_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_02_totalcount` > cutoff,`mouse1-3_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_01_totalcount` > cutoff,`mouse1-3_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#RsYN04
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.3, RsYN04",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_04_totalcount` > cutoff,`mouse1-3_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_03_totalcount` > cutoff,`mouse1-3_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_02_totalcount` > cutoff,`mouse1-3_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_01_totalcount` > cutoff,`mouse1-3_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_04_totalcount` > cutoff,`mouse1-3_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_03_totalcount` > cutoff,`mouse1-3_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_02_totalcount` > cutoff,`mouse1-3_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_01_totalcount` > cutoff,`mouse1-3_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#RmYN02
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.3, RmYN02",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_04_totalcount` > cutoff,`mouse1-3_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_03_totalcount` > cutoff,`mouse1-3_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_02_totalcount` > cutoff,`mouse1-3_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_01_totalcount` > cutoff,`mouse1-3_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_05_totalcount` > cutoff,`mouse1-3_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_04_totalcount` > cutoff,`mouse1-3_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_03_totalcount` > cutoff,`mouse1-3_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_02_totalcount` > cutoff,`mouse1-3_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-3_01_totalcount` > cutoff,`mouse1-3_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#save pdf
+invisible(dev.print(pdf, paste(config$sera_delta_AUC_dir,"/representative-plots_mouse1-3.pdf",sep="")))
+```
+
+```{r binding_curves_mouse1-5, echo=T, fig.width=16.5 fig.height=2.75, fig.align="center", dpi=300,dev="png"}
+par(mfrow=c(1,6))
+
+#SARS-CoV-2_WH1
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.5, SARS-CoV-2_WH1",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_04_totalcount` > cutoff,`mouse1-5_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_03_totalcount` > cutoff,`mouse1-5_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_02_totalcount` > cutoff,`mouse1-5_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_01_totalcount` > cutoff,`mouse1-5_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_04_totalcount` > cutoff,`mouse1-5_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_03_totalcount` > cutoff,`mouse1-5_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_02_totalcount` > cutoff,`mouse1-5_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_01_totalcount` > cutoff,`mouse1-5_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#SARS-CoV-2_BA2
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.5, SARS-CoV-2_BA2",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse1-5_05_totalcount` > cutoff & variant_class=="wildtype",`mouse1-5_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse1-5_04_totalcount` > cutoff & variant_class=="wildtype",`mouse1-5_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse1-5_03_totalcount` > cutoff & variant_class=="wildtype",`mouse1-5_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse1-5_02_totalcount` > cutoff & variant_class=="wildtype",`mouse1-5_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse1-5_01_totalcount` > cutoff & variant_class=="wildtype",`mouse1-5_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse1-5_05_totalcount` > cutoff & variant_class=="wildtype",`mouse1-5_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse1-5_04_totalcount` > cutoff & variant_class=="wildtype",`mouse1-5_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse1-5_03_totalcount` > cutoff & variant_class=="wildtype",`mouse1-5_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse1-5_02_totalcount` > cutoff & variant_class=="wildtype",`mouse1-5_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse1-5_01_totalcount` > cutoff & variant_class=="wildtype",`mouse1-5_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#PRD-0038
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.5, PRD-0038",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_04_totalcount` > cutoff,`mouse1-5_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_03_totalcount` > cutoff,`mouse1-5_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_02_totalcount` > cutoff,`mouse1-5_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_01_totalcount` > cutoff,`mouse1-5_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_04_totalcount` > cutoff,`mouse1-5_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_03_totalcount` > cutoff,`mouse1-5_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_02_totalcount` > cutoff,`mouse1-5_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_01_totalcount` > cutoff,`mouse1-5_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#SARS-CoV-1_Urbani
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.5, SARS-CoV-1_Urbani",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_04_totalcount` > cutoff,`mouse1-5_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_03_totalcount` > cutoff,`mouse1-5_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_02_totalcount` > cutoff,`mouse1-5_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_01_totalcount` > cutoff,`mouse1-5_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_04_totalcount` > cutoff,`mouse1-5_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_03_totalcount` > cutoff,`mouse1-5_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_02_totalcount` > cutoff,`mouse1-5_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_01_totalcount` > cutoff,`mouse1-5_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#RsYN04
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.5, RsYN04",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_04_totalcount` > cutoff,`mouse1-5_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_03_totalcount` > cutoff,`mouse1-5_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_02_totalcount` > cutoff,`mouse1-5_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_01_totalcount` > cutoff,`mouse1-5_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_04_totalcount` > cutoff,`mouse1-5_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_03_totalcount` > cutoff,`mouse1-5_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_02_totalcount` > cutoff,`mouse1-5_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_01_totalcount` > cutoff,`mouse1-5_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#RmYN02
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse1.5, RmYN02",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_04_totalcount` > cutoff,`mouse1-5_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_03_totalcount` > cutoff,`mouse1-5_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_02_totalcount` > cutoff,`mouse1-5_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_01_totalcount` > cutoff,`mouse1-5_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_05_totalcount` > cutoff,`mouse1-5_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_04_totalcount` > cutoff,`mouse1-5_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_03_totalcount` > cutoff,`mouse1-5_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_02_totalcount` > cutoff,`mouse1-5_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse1-5_01_totalcount` > cutoff,`mouse1-5_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#save pdf
+invisible(dev.print(pdf, paste(config$sera_delta_AUC_dir,"/representative-plots_mouse1-5.pdf",sep="")))
+```
+
+```{r binding_curves_mouse2-3, echo=T, fig.width=16.5, fig.height=2.75, fig.align="center", dpi=300,dev="png"}
+par(mfrow=c(1,6))
+
+#SARS-CoV-2_WH1
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse2.3, SARS-CoV-2_WH1",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_04_totalcount` > cutoff,`mouse2-3_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_03_totalcount` > cutoff,`mouse2-3_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_02_totalcount` > cutoff,`mouse2-3_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_01_totalcount` > cutoff,`mouse2-3_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_04_totalcount` > cutoff,`mouse2-3_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_03_totalcount` > cutoff,`mouse2-3_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_02_totalcount` > cutoff,`mouse2-3_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_01_totalcount` > cutoff,`mouse2-3_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#SARS-CoV-2_BA2
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse2.3, SARS-CoV-2_BA2",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse2-3_05_totalcount` > cutoff & variant_class=="wildtype",`mouse2-3_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse2-3_04_totalcount` > cutoff & variant_class=="wildtype",`mouse2-3_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse2-3_03_totalcount` > cutoff & variant_class=="wildtype",`mouse2-3_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse2-3_02_totalcount` > cutoff & variant_class=="wildtype",`mouse2-3_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse2-3_01_totalcount` > cutoff & variant_class=="wildtype",`mouse2-3_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse2-3_05_totalcount` > cutoff & variant_class=="wildtype",`mouse2-3_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse2-3_04_totalcount` > cutoff & variant_class=="wildtype",`mouse2-3_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse2-3_03_totalcount` > cutoff & variant_class=="wildtype",`mouse2-3_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse2-3_02_totalcount` > cutoff & variant_class=="wildtype",`mouse2-3_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse2-3_01_totalcount` > cutoff & variant_class=="wildtype",`mouse2-3_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#PRD-0038
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse2.3, PRD-0038",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_04_totalcount` > cutoff,`mouse2-3_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_03_totalcount` > cutoff,`mouse2-3_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_02_totalcount` > cutoff,`mouse2-3_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_01_totalcount` > cutoff,`mouse2-3_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_04_totalcount` > cutoff,`mouse2-3_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_03_totalcount` > cutoff,`mouse2-3_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_02_totalcount` > cutoff,`mouse2-3_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_01_totalcount` > cutoff,`mouse2-3_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#SARS-CoV-1_Urbani
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse2.3, SARS-CoV-1_Urbani",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_04_totalcount` > cutoff,`mouse2-3_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_03_totalcount` > cutoff,`mouse2-3_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_02_totalcount` > cutoff,`mouse2-3_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_01_totalcount` > cutoff,`mouse2-3_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_04_totalcount` > cutoff,`mouse2-3_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_03_totalcount` > cutoff,`mouse2-3_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_02_totalcount` > cutoff,`mouse2-3_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_01_totalcount` > cutoff,`mouse2-3_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#RsYN04
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse2.3, RsYN04",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_04_totalcount` > cutoff,`mouse2-3_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_03_totalcount` > cutoff,`mouse2-3_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_02_totalcount` > cutoff,`mouse2-3_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_01_totalcount` > cutoff,`mouse2-3_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_04_totalcount` > cutoff,`mouse2-3_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_03_totalcount` > cutoff,`mouse2-3_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_02_totalcount` > cutoff,`mouse2-3_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_01_totalcount` > cutoff,`mouse2-3_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#RmYN02
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse2.3, RmYN02",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_04_totalcount` > cutoff,`mouse2-3_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_03_totalcount` > cutoff,`mouse2-3_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_02_totalcount` > cutoff,`mouse2-3_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_01_totalcount` > cutoff,`mouse2-3_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_05_totalcount` > cutoff,`mouse2-3_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_04_totalcount` > cutoff,`mouse2-3_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_03_totalcount` > cutoff,`mouse2-3_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_02_totalcount` > cutoff,`mouse2-3_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse2-3_01_totalcount` > cutoff,`mouse2-3_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#save pdf
+invisible(dev.print(pdf, paste(config$sera_delta_AUC_dir,"/representative-plots_mouse2-3.pdf",sep="")))
+```
+
+
+```{r binding_curves_mouse2-6, echo=T, fig.width=18, fig.height=3, fig.align="center", dpi=300,dev="png"}
+par(mfrow=c(1,6))
+
+#SARS-CoV-2_WH1
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse2.6, SARS-CoV-2_WH1",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_04_totalcount` > cutoff,`mouse2-6_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_03_totalcount` > cutoff,`mouse2-6_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_02_totalcount` > cutoff,`mouse2-6_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_01_totalcount` > cutoff,`mouse2-6_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_04_totalcount` > cutoff,`mouse2-6_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_03_totalcount` > cutoff,`mouse2-6_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_02_totalcount` > cutoff,`mouse2-6_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="SARS-CoV-2_WH1" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_01_totalcount` > cutoff,`mouse2-6_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#SARS-CoV-2_BA2
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse2.6, SARS-CoV-2_BA2",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse2-6_05_totalcount` > cutoff & variant_class=="wildtype",`mouse2-6_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse2-6_04_totalcount` > cutoff & variant_class=="wildtype",`mouse2-6_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse2-6_03_totalcount` > cutoff & variant_class=="wildtype",`mouse2-6_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse2-6_02_totalcount` > cutoff & variant_class=="wildtype",`mouse2-6_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-2_BA2" & `mouse2-6_01_totalcount` > cutoff & variant_class=="wildtype",`mouse2-6_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse2-6_05_totalcount` > cutoff & variant_class=="wildtype",`mouse2-6_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse2-6_04_totalcount` > cutoff & variant_class=="wildtype",`mouse2-6_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse2-6_03_totalcount` > cutoff & variant_class=="wildtype",`mouse2-6_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse2-6_02_totalcount` > cutoff & variant_class=="wildtype",`mouse2-6_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="SARS-CoV-2_BA2" & `mouse2-6_01_totalcount` > cutoff & variant_class=="wildtype",`mouse2-6_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#PRD-0038
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse2.6, PRD-0038",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_04_totalcount` > cutoff,`mouse2-6_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_03_totalcount` > cutoff,`mouse2-6_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_02_totalcount` > cutoff,`mouse2-6_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_01_totalcount` > cutoff,`mouse2-6_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_04_totalcount` > cutoff,`mouse2-6_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_03_totalcount` > cutoff,`mouse2-6_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_02_totalcount` > cutoff,`mouse2-6_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="PRD-0038" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_01_totalcount` > cutoff,`mouse2-6_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#SARS-CoV-1_Urbani
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse2.6, SARS-CoV-1_Urbani",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_04_totalcount` > cutoff,`mouse2-6_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_03_totalcount` > cutoff,`mouse2-6_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_02_totalcount` > cutoff,`mouse2-6_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_01_totalcount` > cutoff,`mouse2-6_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_04_totalcount` > cutoff,`mouse2-6_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_03_totalcount` > cutoff,`mouse2-6_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_02_totalcount` > cutoff,`mouse2-6_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="SARS-CoV-1_Urbani" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_01_totalcount` > cutoff,`mouse2-6_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#RsYN04
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse2.6, RsYN04",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_04_totalcount` > cutoff,`mouse2-6_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_03_totalcount` > cutoff,`mouse2-6_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_02_totalcount` > cutoff,`mouse2-6_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_01_totalcount` > cutoff,`mouse2-6_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_04_totalcount` > cutoff,`mouse2-6_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_03_totalcount` > cutoff,`mouse2-6_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_02_totalcount` > cutoff,`mouse2-6_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="RsYN04" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_01_totalcount` > cutoff,`mouse2-6_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#RmYN02
+#set empty plot window
+plot(NULL,NULL,xlim=c(10^-6,10^-2),ylim=c(1,4),log="x",main="mouse2.6, RmYN02",ylab="serum binding (mean FACS bin)",xlab="serum dilution")
+#put in faint points per-replicate
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_05_meanbin`]
+points(rep(10^-6,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_04_totalcount` > cutoff,`mouse2-6_04_meanbin`]
+points(rep(10^-5,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_03_totalcount` > cutoff,`mouse2-6_03_meanbin`]
+points(rep(10^-4,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_02_totalcount` > cutoff,`mouse2-6_02_meanbin`]
+points(rep(10^-3,length(y)),y,pch=16,col="#7f7f7f02")
+y <- dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_01_totalcount` > cutoff,`mouse2-6_01_meanbin`]
+points(rep(10^-2,length(y)),y,pch=16,col="#7f7f7f02")
+#put in black line for the average
+y1 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_05_totalcount` > cutoff,`mouse2-6_05_meanbin`],na.rm=T)
+points(10^-6,y1,pch=16,col="black")
+y2 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_04_totalcount` > cutoff,`mouse2-6_04_meanbin`],na.rm=T)
+points(10^-5,y2,pch=16,col="black")
+y3 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_03_totalcount` > cutoff,`mouse2-6_03_meanbin`],na.rm=T)
+points(10^-4,y3,pch=16,col="black")
+y4 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_02_totalcount` > cutoff,`mouse2-6_02_meanbin`],na.rm=T)
+points(10^-3,y4,pch=16,col="black")
+y5 <- mean(dt[target=="RmYN02" & sublibrary=="lib47_SARSr-wts" & `mouse2-6_01_totalcount` > cutoff,`mouse2-6_01_meanbin`],na.rm=T)
+points(10^-2,y5,pch=16,col="black")
+#connect average points with lines
+lines(c(10^-5, 10^-4),c(y2, y3),lwd=1.5,col="black",lty=2)
+lines(c(10^-4, 10^-3),c(y3, y4),lwd=1.5,col="black",lty=2)
+lines(c(10^-3, 10^-2),c(y4, y5),lwd=1.5,col="black",lty=2)
+abline(h=y1,lty=2,col="gray50")
+legend("topleft",bty="n",cex=1,legend=paste("mean AUC: "))
+
+#save pdf
+invisible(dev.print(pdf, paste(config$sera_delta_AUC_dir,"/representative-plots_mouse2-6.pdf",sep="")))
+```

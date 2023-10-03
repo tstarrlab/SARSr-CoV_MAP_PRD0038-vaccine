@@ -3,11 +3,13 @@ Collapse barcodes to final per-RBD/mutant phenotype scores
 Tyler Starr
 03/22/2023
 
--   [Setup](#setup)
--   [Calculate per-variant mean
-    scores](#calculate-per-variant-mean-scores)
--   [Expression effects](#expression-effects)
--   [Heatmaps!](#heatmaps)
+-   <a href="#setup" id="toc-setup">Setup</a>
+-   <a href="#calculate-per-variant-mean-scores"
+    id="toc-calculate-per-variant-mean-scores">Calculate per-variant mean
+    scores</a>
+-   <a href="#expression-effects" id="toc-expression-effects">Expression
+    effects</a>
+-   <a href="#heatmaps" id="toc-heatmaps">Heatmaps!</a>
 
 This notebook reads in the per-barcode sera binding AUCs and collapses
 barcodes to final mean binding for each variant, and generates some
